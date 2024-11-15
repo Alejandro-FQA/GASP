@@ -1,4 +1,4 @@
-# # 1D Time evolution Harmonic Oscillator
+# # 1D Quantum Harmonic Oscillator
 
 # %% import PyTorch
 import torch
@@ -10,6 +10,7 @@ import matplotlib.pyplot as plt
 # import Custom Modules
 import parameters as pm
 import utilities as utils
+import plots
 # import Customs Classes
 from models import Gaussian
 from analysis import Dynamics
@@ -25,12 +26,15 @@ dev = 'cpu' # can be changed to 'cuda' for GPU usage
 device = torch.device(dev)
 
 # Create the NN model
-model = Gaussian()
+num_params = 2 # only 1 or 2 parameters
+model = Gaussian(num_params) 
 
 # Define Parameters
-new_params = torch.view_as_complex(torch.randn(1,2))
+new_params = torch.view_as_complex(torch.randn(num_params,2))
+# ground state values provided
 new_params[0] = 1 + 0 * 1j
-# new_params[1] = 0 + 0 * 1j
+if num_params == 2:
+    new_params[1] = 0 + 0 * 1j
 
 # Update model parameteres
 model.update_params(new_params)
@@ -41,7 +45,7 @@ grid = utils.PointGrid(100, start=-8, end=8)
 # device tells where to store the tensor
 mesh = grid.get_points().to(device)
 
-# torch.unsqueeze(1) creates a [Nx, 1] tensor, ie, a batch of N items of size 1
+# torch.unsqueeze(1) creates a [Nx, 1] tensor
 # torch.requires_grad_() tells autograd to record operations on this tensor
 x_grid = mesh.clone().unsqueeze(1).requires_grad_().type(torch.complex128)
 
@@ -52,7 +56,7 @@ pm.w = 1
 
 # Time parameters
 pm.dt = 0.1
-pm.t_max = 10
+pm.t_max = 5
 
 # Integrator parameters
 pm.evolution = 'imag'
@@ -61,10 +65,17 @@ pm.evolution = 'imag'
 imag_file_path = 'model_states_imag_evo.h5'
 integrator(model, x_grid, file_path=imag_file_path)
 
-# Get data and plot it
+# Get the dynamics
 imag_evo = Dynamics(file_path=imag_file_path)
-psi = imag_evo.compute_psi(x_grid)
-plt.pcolor(imag_evo.t_grid, mesh, np.abs(psi.T)**2)
+# Compute wavefunction
+psi, norm = imag_evo.compute_psi(x_grid)
+# Compute density
+den = np.abs(psi)**2
+# Get parameters
+params = imag_evo.get_params()
+
+# Plot data
+getattr(plots, f'evo_fig_{num_params}_params')(imag_evo.t_grid, mesh, den.T, params, fig_name='evo_imag.pdf')
 
 #%% Stochastic Reconfiguration
 # Initial conditions
@@ -82,9 +93,16 @@ pm.evolution = 'real'
 real_file_path = 'model_states_real_evo.h5'
 integrator(model, x_grid, file_path=real_file_path)
 
-# Get data and plot it
+# Get the dynamics
 real_evo = Dynamics(file_path=real_file_path)
-psi = real_evo.compute_psi(x_grid)
-plt.pcolor(real_evo.t_grid, mesh, np.abs(psi.T)**2)
+# Compute wavefunction
+psi, norm = real_evo.compute_psi(x_grid)
+# Compute density
+den = np.abs(psi)**2
+# Get parameters
+params = real_evo.get_params()
+
+# Plot data
+getattr(plots, f'evo_fig_{num_params}_params')(real_evo.t_grid, mesh, den.T, params, fig_name='evo_real.pdf')
 
 #%%

@@ -113,7 +113,7 @@ def integrator(model, x_grid, t_grid=None, file_path=pm.file_path):
             vector_to_parameters(u, model.parameters())
         # Save the model state at this time step in HDF5
         analysis.save_model_states(model, time_step=it, file_path=file_path)
-
+        
 # -----------------------------------------------------------------
 def RK4(u, model, grid):
 

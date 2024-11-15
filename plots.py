@@ -6,12 +6,12 @@ from matplotlib.gridspec import GridSpec
 plt.rcParams['text.usetex'] = True
 plt.rcParams['font.size'] = 12  # Optional: set the font size for clarity
 
-def evo_fig_1_params(time, mesh, den, params, fig_name):
+def evo_fig_1_params(time, mesh, den, params, fig_name='output.pdf'):
     
     # define variables
     t_max = max(time)
-    real_params = np.transpose(np.real(params))
-    imag_params = np.transpose(np.imag(params))
+    real_params = np.real(params)
+    imag_params = np.imag(params)
 
     # top labels
     ha = 'left'
@@ -88,7 +88,7 @@ def evo_fig_1_params(time, mesh, den, params, fig_name):
     # Save the figure in vector format (SVG, PDF, or EPS)
     fig.savefig(fig_name, format='pdf', bbox_inches='tight', transparent=True)
 
-def evo_fig_2_params(time, mesh, den, params, fig_name):
+def evo_fig_2_params(time, mesh, den, params, fig_name='output.pdf'):
     
     # define variables
     t_max = max(time)

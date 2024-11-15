@@ -29,7 +29,7 @@ def save_model_architecture(model, file_path):
             del f["model_architecture"]  # Remove existing architecture if it exists
         # Save as a dataset with raw binary data
         f.create_dataset("model_architecture", data=np.void(model_data))
-    print(f"Model architecture saved in '{file_path}' under 'model_architecture'.")
+    # print(f"Model architecture saved in '{file_path}' under 'model_architecture'.")
 
 # -----------------------------------------------------------------
 def load_model_architecture(file_path):
@@ -55,7 +55,7 @@ def load_model_architecture(file_path):
     
     # Load the model directly from the in-memory buffer using torch.jit
     loaded_model = torch.jit.load(buffer)
-    print(f"Model architecture loaded from '{file_path}'.")
+    # print(f"Model architecture loaded from '{file_path}'.")
     return loaded_model
 
 # -----------------------------------------------------------------
@@ -78,21 +78,20 @@ def save_model_states(model, time_step, file_path):
         group = f.create_group(f"time_{time_step}")
         for key, value in model.state_dict().items():
             group.create_dataset(key, data=value.cpu().numpy())
-
 # -----------------------------------------------------------------
-def load_model_states(model, time_step, file_path):
-    """
-    Load model parameters, architecture, and additional parameters in an HDF5 file.
+# def load_model_states(model, time_step, file_path):
+#     """
+#     Load model parameters, architecture, and additional parameters in an HDF5 file.
 
-    Args:
-        model (torch.nn.Module): The model to save.
-        time_step (int): The current time step identifier.
-        file_path (str): Path to the HDF5 file.
-    """
-    with h5py.File(file_path, 'r') as f:
-        group = f[f"time_{time_step}"]
-        state_dict = {key: torch.tensor(group[key]) for key in group.keys()}
-    model.load_state_dict(state_dict)
+#     Args:
+#         model (torch.nn.Module): The model to save.
+#         time_step (int): The current time step identifier.
+#         file_path (str): Path to the HDF5 file.
+#     """
+#     with h5py.File(file_path, 'r') as f:
+#         group = f[f"time_{time_step}"]
+#         state_dict = {key: torch.tensor(group[key]) for key in group.keys()}
+#     model.load_state_dict(state_dict)
 
 # -----------------------------------------------------------------
 def save_variable(variable, name, file_path):
@@ -111,7 +110,7 @@ def save_variable(variable, name, file_path):
         
         # Create a new dataset for variable
         f.create_dataset(name, data=variable)
-    print(f"'{name}' saved as a dataset in '{file_path}'.")
+    # print(f"'{name}' saved as a dataset in '{file_path}'.")
 
 # -----------------------------------------------------------------
 def load_variable(name, file_path):
@@ -133,7 +132,7 @@ def load_variable(name, file_path):
             raise KeyError(f"'{name}' not found in {file_path}")
         
         variable = f[name][:]
-    print(f"'{name}' loaded from {file_path}")
+    # print(f"'{name}' loaded from {file_path}")
     return variable
 
 # -----------------------------------------------------------------
@@ -190,38 +189,49 @@ class Dynamics:
             time_step (int): The time step identifier to load.  
 
         Returns:
-            psi (np.ndarray): Wavefunction at each grid point.
+            psi (np.ndarray): Wavefunction at each grid point normalized to 1.
+            norm (np.array): Norm at each time step.
 
         Raises:
             KeyError: If the model architecture does not exist in the HDF5 file.
         """
         psi = []
+        norm = []
 
         if not time_step:
             for it in range(len(self.t_grid)):
                 self.load_model_state(it)
-                psi.append(self.model(x_grid).detach().numpy().squeeze())
+                output = self.model(x_grid).detach().numpy().squeeze()
+                norm.append(np.vdot(output, output))
+                psi.append(output / np.sqrt(norm[it]))
         else:
             self.load_model_state(time_step)
-            psi.append(self.model(x_grid).detach().numpy().squeeze())
-        return np.array(psi)
+            output = self.model(x_grid).detach().numpy().squeeze()
+            norm.append(np.vdot(output, output))
+            psi.append(output / np.sqrt(norm))
+        return np.array(psi), np.array(norm)
     
-    def get_params(self):
+    def get_params(self, time_step=None):
         """
         Collect the model parameters.
+        If no time_step is given, parameters are returned for all time steps.
+
+        Args:
+            time_step (int): The time step identifier to load.  
+
+        Returns:
+            params (np.ndarray): Parameters of the model
+
+        Raises:
+            KeyError: If the model architecture does not exist in the HDF5 file.
         """
         params = []
-        for it in range(len(self.t_grid)):
-            self.load_model_state(it)
-            params.append(self.model.params.detach().numpy().squeeze())
-        return np.array(params)
+        if not time_step:
+            for it in range(len(self.t_grid)):
+                self.load_model_state(it)
+                params.append(self.model.params.detach().numpy().copy())
+        else:
+            self.load_model_state(time_step)
+            params.append(self.model.params.detach().numpy())
 
-    def norm(self):
-        """
-        Compute the norm of psi, for example, the L2 norm.
-        """
-        if self.psi is None:
-            raise ValueError("Psi has not been computed. Run compute_psi() first.")
-        
-        norm = torch.norm(self.psi)
-        return norm
+        return np.array(params)
