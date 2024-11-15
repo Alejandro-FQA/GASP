@@ -1,15 +1,12 @@
 # PyTorch imports
 import torch
-from torch.autograd import grad
 from torch.nn.utils import parameters_to_vector, vector_to_parameters
 
 import numpy as np
 from tqdm import tqdm
 
-import h5py
-
 # Custom imports
-import utils
+import utilities as utils
 import analysis
 import parameters as pm
 import stochastic_reconfiguration as SR

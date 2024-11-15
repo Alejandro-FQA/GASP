@@ -1,6 +1,6 @@
 # # 1D Time evolution Harmonic Oscillator
 
-#%% import PyTorch
+# %% import PyTorch
 import torch
 
 # impor numeric libraries
@@ -9,9 +9,7 @@ import matplotlib.pyplot as plt
 
 # import Custom Modules
 import parameters as pm
-import utils
-import plots
-import analysis
+import utilities as utils
 # import Customs Classes
 from models import Gaussian
 from analysis import Dynamics
@@ -28,7 +26,6 @@ device = torch.device(dev)
 
 # Create the NN model
 model = Gaussian()
-
 
 # Define Parameters
 new_params = torch.view_as_complex(torch.randn(1,2))

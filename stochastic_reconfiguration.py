@@ -5,7 +5,7 @@ import torch
 from torch.autograd import grad
 
 # Custom imports
-import utils
+import utilities as utils
 import parameters as pm
 
 # -----------------------------------------------------------------
