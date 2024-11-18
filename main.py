@@ -30,7 +30,7 @@ seed = 1
 torch.manual_seed(seed)
 
 # Create the NN model
-num_params = 2 # only 1 or 2 parameters
+num_params = 1 # only 1 or 2 parameters
 model = Gaussian(num_params).to(device) 
 
 # Define Parameters

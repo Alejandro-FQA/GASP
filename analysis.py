@@ -242,7 +242,7 @@ class Dynamics:
         energy = torch.vdot(psi[:,0], H_psi[:,0]) / torch.vdot(psi[:,0], psi[:,0])
         return energy
     
-    def compute_variance(psi, x_grid):
+    def compute_variance(self):
         """
         Compute the variance of a state described by psi.
         Variance defined as: <x²> - <x>²
@@ -255,12 +255,12 @@ class Dynamics:
             variance (np.ndarray): Varaiance.
         """
         # Spatial grid operator
-        oper = torch.diag(x_grid.squeeze(-1))
-        oper2 = torch.matmul(oper, oper)
-        x1 = torch.einsum('ik,ij,jk->k', psi.conj(), oper2, psi)
-        x2 = torch.einsum('ik,ij,jk->k', psi.conj(), oper, psi) ** 2
-        variance = (x1 - x2) / torch.einsum('ij,ij->j', psi.conj(), psi)
-        return variance.detach().numpy()
+        oper = np.diag(self.x_grid.squeeze(-1).detach().numpy())
+        oper2 = np.matmul(oper, oper)
+        x1 = np.einsum('ki,ij,kj->k', self.psi.conj(), oper2, self.psi)
+        x2 = np.einsum('ki,ij,kj->k', self.psi.conj(), oper, self.psi) ** 2
+        variance = (x1 - x2) / np.einsum('ij,ij->i', self.psi.conj(), self.psi)
+        return variance
 
     def get_params(self, time_step=None):
         """
