@@ -9,57 +9,11 @@ import utilities as utils
 import parameters as pm
 
 # -----------------------------------------------------------------
-# Function to compute energy expectation value
-def energy(psi, grid, hamiltonian):
-
-    # Split wavefunction
-    u =       0.5 * (psi + psi.conj())
-    v = -1j * 0.5 * (psi - psi.conj())  
-
-    # Kinetic term
-    (du_dx, _) = torch.view_as_real(utils.nth_derivative(u, grid, 1)).unbind(-1)
-    (dv_dx, _) = torch.view_as_real(utils.nth_derivative(v, grid, 1)).unbind(-1)
-    (d2u_d2x, _) = torch.view_as_real(utils.nth_derivative(du_dx, grid, 1)).unbind(-1)
-    (d2v_d2x, _) = torch.view_as_real(utils.nth_derivative(dv_dx, grid, 1)).unbind(-1)
-
-    d2psi_d2x = d2u_d2x + 1j * d2v_d2x
-
-    kinetic = -(1/2) * d2psi_d2x    
-    # Potential term
-    potential = (1/2) * pm.w ** 2 * (grid - pm.x0).pow(2) * psi 
-    # Applied Hamiltonian to psi    
-    H_psi = kinetic + potential                                     
-    energy = torch.einsum('ij,ij->j', psi, H_psi) / torch.einsum('ij,ij->j',psi, psi)
-    return energy
-
-# -----------------------------------------------------------------
-# Function to compute variance of operator
-def variance(psi, oper):
-    "oper is a matrix already"
-    oper2 = torch.matmul(oper, oper)
-    x1 = torch.einsum('ik,ij,jk->k', psi.conj(), oper2, psi)
-    x2 = torch.einsum('ik,ij,jk->k', psi.conj(), oper, psi) ** 2
-    return (x1 - x2) / torch.einsum('ij,ij->j', psi.conj(), psi)
-
-# -----------------------------------------------------------------
-# Function to compute energy expectation value
-def compute_energy(model, grid, hamiltonian):
-    psi = model(grid)
-    H_psi = hamiltonian(psi, grid)  # Apply Hamiltonian to psi
-    energy = torch.vdot(psi[:,0], H_psi[:,0]) / torch.vdot(psi[:,0], psi[:,0])
-    return energy
-
-# -----------------------------------------------------------------
 # Function to compute the Hamiltonian
 def hamiltonian(psi, grid):    
     # Split wavefunction
     u =       0.5 * (psi + psi.conj())
     v = -1j * 0.5 * (psi - psi.conj())  
-
-    # print("u has NaN:", torch.isnan(u).any())
-    # print("u has inf or -inf:", torch.isinf(u).any())
-    # print("v has NaN:", torch.isnan(v).any())
-    # print("v has inf or -inf:", torch.isinf(v).any())
 
     # Kinetic term
     (du_dx, _) = torch.view_as_real(utils.nth_derivative(u, grid, 1)).type_as(u).unbind(-1)

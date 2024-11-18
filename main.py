@@ -12,7 +12,7 @@ import parameters as pm
 import utilities as utils
 import plots
 # import Customs Classes
-from models import Gaussian
+from models import Gaussian, NQS
 from analysis import Dynamics
 # improt Custom Functions
 from integrators import integrator
@@ -25,9 +25,13 @@ torch.set_default_dtype(torch.float64)
 dev = 'cpu' # can be changed to 'cuda' for GPU usage
 device = torch.device(dev)
 
+# Seed of the random number generator
+seed = 1                                       
+torch.manual_seed(seed)
+
 # Create the NN model
 num_params = 2 # only 1 or 2 parameters
-model = Gaussian(num_params) 
+model = Gaussian(num_params).to(device) 
 
 # Define Parameters
 new_params = torch.view_as_complex(torch.randn(num_params,2))
@@ -66,16 +70,14 @@ imag_file_path = 'model_states_imag_evo.h5'
 integrator(model, x_grid, file_path=imag_file_path)
 
 # Get the dynamics
-imag_evo = Dynamics(file_path=imag_file_path)
-# Compute wavefunction
-psi, norm = imag_evo.compute_psi(x_grid)
+imag_evo = Dynamics(file_path=imag_file_path, x_grid=x_grid)
 # Compute density
-den = np.abs(psi)**2
+den = np.abs(imag_evo.psi)**2
 # Get parameters
 params = imag_evo.get_params()
 
 # Plot data
-getattr(plots, f'evo_fig_{num_params}_params')(imag_evo.t_grid, mesh, den.T, params, fig_name='evo_imag.pdf')
+getattr(plots, f'evo_fig_{num_params}_params')(imag_evo.t_grid, mesh, den.T, params, fig_name='evo_imag.png')
 
 #%% Stochastic Reconfiguration
 # Initial conditions
@@ -94,15 +96,13 @@ real_file_path = 'model_states_real_evo.h5'
 integrator(model, x_grid, file_path=real_file_path)
 
 # Get the dynamics
-real_evo = Dynamics(file_path=real_file_path)
-# Compute wavefunction
-psi, norm = real_evo.compute_psi(x_grid)
+real_evo = Dynamics(file_path=real_file_path, x_grid=x_grid)
 # Compute density
-den = np.abs(psi)**2
+den = np.abs(real_evo.psi)**2
 # Get parameters
 params = real_evo.get_params()
 
 # Plot data
-getattr(plots, f'evo_fig_{num_params}_params')(real_evo.t_grid, mesh, den.T, params, fig_name='evo_real.pdf')
+getattr(plots, f'evo_fig_{num_params}_params')(real_evo.t_grid, mesh, den.T, params, fig_name='evo_real.png')
 
 #%%

@@ -19,5 +19,5 @@ reg = 'diagonal_shift'
 
 # Gaussian barrier
 gauss_width = 0
-gauss_amplitude = 20
+gauss_amplitude = 0
 gauss_x0 = 0

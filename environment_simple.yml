@@ -1,0 +1,11 @@
+name: ml-tools-for-qm
+channels:
+  - defaults
+dependencies:
+  - graphviz
+  - python=3.10
+  - cpuonly
+  - pytorch
+  - torchaudio
+  - torchvision
+  - tensorboard

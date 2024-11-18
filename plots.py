@@ -85,8 +85,8 @@ def evo_fig_1_params(time, mesh, den, params, fig_name='output.pdf'):
 
     plt.show()
 
-    # Save the figure in vector format (SVG, PDF, or EPS)
-    fig.savefig(fig_name, format='pdf', bbox_inches='tight', transparent=True)
+    # Save the figure
+    fig.savefig(fig_name, format='png', bbox_inches='tight', transparent=True)
 
 def evo_fig_2_params(time, mesh, den, params, fig_name='output.pdf'):
     
@@ -180,5 +180,5 @@ def evo_fig_2_params(time, mesh, den, params, fig_name='output.pdf'):
 
     plt.show()
 
-    # Save the figure in vector format (SVG, PDF, or EPS)
-    fig.savefig(fig_name, format='pdf', bbox_inches='tight', transparent=True)
+    # Save the figure
+    fig.savefig(fig_name, format='png', bbox_inches='tight', transparent=True)
