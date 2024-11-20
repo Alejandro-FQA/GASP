@@ -8,9 +8,19 @@ from torch.autograd import grad
 import utilities as utils
 import parameters as pm
 
-def compute_energy(model, grid, hamiltonian):
-    psi = model(grid)
-    H_psi = hamiltonian(psi, grid)  # Apply Hamiltonian to psi
+def compute_energy(psi, x_grid):
+    """
+    Compute the energy of a state described by psi.
+    psi is the output of self.model wiht input x_grid.
+
+    Args:
+        psi (torch.Tensor): Wavefunction.
+        x_grid (torch.Tensor): Spatial grid points.
+
+    Returns:
+        energy (np.ndarray): Energy per particle.
+    """
+    H_psi = hamiltonian(psi, x_grid)  # Apply Hamiltonian to psi
     energy = torch.vdot(psi[:,0], H_psi[:,0]) / torch.vdot(psi[:,0], psi[:,0])
     return energy
 

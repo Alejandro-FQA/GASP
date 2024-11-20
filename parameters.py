@@ -9,12 +9,18 @@ dt = 0.1                # time discretization
 t_max = 1               # last time instance
 evolution = 'real'
 integrator = 'RK4'
+progress_bar = True
+
+# Convergence parameters
+stopper = True
+e_error = 1e-8
+steps = 10
 
 # Path to save data
 file_path = "model_states.h5"
 
 # Regularization parameters
-lambda_reg = 1e-5 * (1 + 1j)
+lambda_reg = 1e-8 * (1 + 1j)
 reg = 'diagonal_shift'
 
 # Gaussian barrier

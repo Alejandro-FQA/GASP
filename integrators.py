@@ -41,7 +41,7 @@ def EOM(parameters, model, grid):
     # Compute wave funtion
     psi = model(grid) 
 
-    # Normalization
+    # TODO: check if normalization improves and is worth the time
     # norm = torch.vdot(psi[:,0], psi[:,0]).detach()
     # psi = psi / torch.sqrt(norm)
 
@@ -60,6 +60,7 @@ def EOM(parameters, model, grid):
     # qgt_inv = torch.linalg.pinv(Sr)
 
     # Solve linear system:
+    # TODO: choose linear solver
     match pm.evolution:
         case 'real':
             parameters = torch.linalg.solve(S, -1j * F)
@@ -86,7 +87,6 @@ def integrator(model, x_grid, t_grid=None, file_path=pm.file_path):
     analysis.save_model_architecture(model, file_path)
     if not t_grid:
         t_grid = utils.time_grid()
-    analysis.save_variable(t_grid, "t_grid", file_path)
 
     # Flatten parameters
     # TODO: compare methods to export and import parameters
@@ -99,45 +99,41 @@ def integrator(model, x_grid, t_grid=None, file_path=pm.file_path):
     # Save the model state at initial time step in HDF5
     analysis.save_model_states(model, time_step=0, file_path=file_path)
 
-    ## TEMPORAL PARAMETERES TO CHECK OUTPUTS
-    # wavefunction
-    psi = model(x_grid).squeeze(1)  
-    # temporal normalization    
-    norm = torch.empty_like(torch.tensor(t_grid))
-    norm[0] = torch.vdot(psi, psi).real
-    # temporal psi
-    psi_rk4 = torch.empty((1, len(x_grid), len(t_grid)), dtype=torch.complex128)  
-    psi_rk4[:,:,0] = psi / torch.sqrt(norm[0])
-    # temporal energy
-    energy = torch.empty_like(torch.tensor(t_grid))
-    energy[0] = SR.compute_energy(model, x_grid, SR.hamiltonian).real
+    if pm.stopper and pm.evolution == 'imag':
+        e0 = SR.compute_energy(model(x_grid), x_grid)
+        check_point = 0
 
     # For each data time
-    for it in tqdm(range(1, len(t_grid))):
-        # For each time step
-        for _ in range(t_step):
-            # Choose integration method
-            match pm.integrator:
-                case 'RK4':    
-                    u = RK4(u, model, x_grid)  
-                case 'Euler':
-                    u = Euler(u, model, x_grid)
-            # Update model
-            vector_to_parameters(u, model.parameters())
-        # Save the model state at this time step in HDF5
-        analysis.save_model_states(model, time_step=it, file_path=file_path)
+    with tqdm(total=len(t_grid)-1, disable=not pm.progress_bar) as pbar:
+        for it in range(1, len(t_grid)):
+            # For each time step
+            for _ in range(t_step):
+                # Choose integration method
+                match pm.integrator:
+                    case 'RK4':    
+                        u = RK4(u, model, x_grid)  
+                    case 'Euler':
+                        u = Euler(u, model, x_grid)
+                # Update model
+                vector_to_parameters(u, model.parameters())          
 
-        ## UPDATE TEMPORAL PARAMETERS
-        psi = model(x_grid).squeeze(1)
-        norm[it] = torch.vdot(psi, psi).real
-
-        # Update data
-        psi_rk4[:,:,it] = psi / torch.sqrt(norm[it])
-        energy[it] = SR.compute_energy(model, x_grid, SR.hamiltonian).real
-        
-    return psi_rk4.clone().detach().numpy(), \
-           norm.clone().detach().numpy(), \
-           energy.clone().detach().numpy()
+            # Save the model state at this time step in HDF5
+            analysis.save_model_states(model, time_step=it, file_path=file_path)
+            # Check for convergence
+            if pm.stopper and pm.evolution == 'imag':
+                energy = SR.compute_energy(model(x_grid), x_grid)
+                e_diff  = abs(energy - e0)
+                pbar.set_postfix_str(f"Energy error: {e_diff:.2e}")
+                if e_diff <= pm.e_error:
+                    check_point += 1
+                    if check_point == pm.steps:
+                        t_grid = t_grid[:it+1]
+                        print('Convergence reached')
+                        break
+                else:
+                    e0 = energy
+            pbar.update(1)        
+        analysis.save_variable(t_grid, "t_grid", file_path)
 # -----------------------------------------------------------------
 def RK4(u, model, grid):
 
