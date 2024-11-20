@@ -7,57 +7,94 @@ import numpy as np
 import stochastic_reconfiguration as SR
 
 # -----------------------------------------------------------------
+# def save_model_architecture(model, file_path):
+#     """
+#     Saves the model architecture (scripted with torch.jit) in an HDF5 file.
+
+#     Args:
+#         model (torch.nn.Module): The model to save as a torch.jit.script file.
+#         file_path (str): Path to the HDF5 file to store the model.
+#     """
+#     # Script and save the model directly into the buffer
+#     temp_file = "temp_model.pt"
+#     scripted_model = torch.jit.script(model)
+#     scripted_model.save(temp_file)  # Save to temporary file
+    
+#     # Read the temporary file into memory and delete the temporary file
+#     with open(temp_file, "rb") as f:
+#         model_data = f.read()
+#     os.remove(temp_file)  # Ensure the temporary file is deleted
+
+#     # Save the binary data in the HDF5 file
+#     with h5py.File(file_path, 'a') as f:
+#         if "model_architecture" in f:
+#             del f["model_architecture"]  # Remove existing architecture if it exists
+#         # Save as a dataset with raw binary data
+#         f.create_dataset("model_architecture", data=np.void(model_data))
+
 def save_model_architecture(model, file_path):
     """
-    Saves the model architecture (scripted with torch.jit) in an HDF5 file.
-
+    Saves the full model architecture and parameters into an HDF5 file.
+    
     Args:
-        model (torch.nn.Module): The model to save as a torch.jit.script file.
+        model (torch.nn.Module): The model to save.
         file_path (str): Path to the HDF5 file to store the model.
     """
-    # Script and save the model directly into the buffer
-    temp_file = "temp_model.pt"
-    scripted_model = torch.jit.script(model)
-    scripted_model.save(temp_file)  # Save directly to the in-memory buffer
+    # Serialize the model architecture and state dict to a binary stream
+    buffer = io.BytesIO()
+    torch.save(model, buffer)  # Save the entire model (architecture + state_dict)
+    buffer.seek(0)
+    model_data = buffer.read()
     
-    # Read the saved file into memory and delete the temporary file
-    with open(temp_file, "rb") as f:
-        model_data = f.read()
-    os.remove(temp_file)  # Ensure the temporary file is deleted
-
-    # Save the binary data in the HDF5 file
+    # Store in HDF5
     with h5py.File(file_path, 'a') as f:
         if "model_architecture" in f:
             del f["model_architecture"]  # Remove existing architecture if it exists
-        # Save as a dataset with raw binary data
         f.create_dataset("model_architecture", data=np.void(model_data))
-    # print(f"Model architecture saved in '{file_path}' under 'model_architecture'.")
 
 # -----------------------------------------------------------------
+# def load_model_architecture(file_path):
+#     """
+#     Loads the model architecture from an HDF5 file.
+
+#     Args:
+#         file_path (str): Path to the HDF5 file containing the model architecture.
+
+#     Returns:
+#         torch.jit.ScriptModule: The deserialized model architecture.
+
+#     Raises:
+#         KeyError: If the model architecture does not exist in the HDF5 file.
+#     """
+#     with h5py.File(file_path, 'r') as f:
+#         if "model_architecture" not in f:
+#             raise KeyError(f"'model_architecture' not found in '{file_path}'")
+#         model_data = f["model_architecture"][()]
+
+#     # Use BytesIO to create an in-memory binary stream
+#     buffer = io.BytesIO(model_data.tobytes())    
+#     # Load the model directly from the in-memory buffer using torch.jit
+#     loaded_model = torch.jit.load(buffer)
+#     return loaded_model
+
 def load_model_architecture(file_path):
     """
-    Loads the model architecture from an HDF5 file.
+    Loads the full model architecture from an HDF5 file.
 
     Args:
         file_path (str): Path to the HDF5 file containing the model architecture.
 
     Returns:
-        torch.jit.ScriptModule: The deserialized model architecture.
-
-    Raises:
-        KeyError: If the model architecture does not exist in the HDF5 file.
+        torch.nn.Module: The deserialized model.
     """
     with h5py.File(file_path, 'r') as f:
         if "model_architecture" not in f:
             raise KeyError(f"'model_architecture' not found in '{file_path}'")
         model_data = f["model_architecture"][()]
-
-    # Use BytesIO to create an in-memory binary stream
-    buffer = io.BytesIO(model_data.tobytes())
     
-    # Load the model directly from the in-memory buffer using torch.jit
-    loaded_model = torch.jit.load(buffer)
-    # print(f"Model architecture loaded from '{file_path}'.")
+    # Use BytesIO to load the model from memory
+    buffer = io.BytesIO(model_data.tobytes())
+    loaded_model = torch.load(buffer)
     return loaded_model
 
 # -----------------------------------------------------------------
@@ -185,7 +222,7 @@ class Dynamics:
         """
         with h5py.File(self.file_path, 'r') as f:
             group = f[f"time_{time_step}"]
-            state_dict = {key: torch.tensor(group[key]) for key in group.keys()}
+            state_dict = {key: torch.tensor(np.array(group[key])) for key in group.keys()}
         self.model.load_state_dict(state_dict)
 
     def compute_psi(self, x_grid=None, time_step=None):
@@ -216,20 +253,23 @@ class Dynamics:
                 
                 norm.append(torch.vdot(output[:,0], output[:,0]).detach().numpy())
                 psi.append((output[:,0] / np.sqrt(norm[it])).detach().numpy())
-                energy.append(self.compute_energy(output, x_grid).detach().numpy())
+                try:
+                    energy.append(self.compute_energy(output, x_grid).detach().numpy())
+                except Exception as error:
+                    print(f'error in iteration {it}: {error}')
         else:
             self.load_model_state(time_step)
             output = self.model(x_grid)
             norm.append(torch.vdot(output[:,0], output[:,0]).detach().numpy())
             psi.append((output[:,0] / np.sqrt(norm[time_step])).detach().numpy())
-            energy.append(self.compute_energy(output, x_grid).detach().numpy())
+            energy.append(SR.compute_energy(x_grid).detach().numpy())
 
         return np.array(psi), np.array(norm), np.array(energy)
     
     def compute_energy(self, psi, x_grid):
         """
         Compute the energy of a state described by psi.
-        psi is the output of the model wiht input x_grid.
+        psi is the output of self.model wiht input x_grid.
 
         Args:
             psi (torch.Tensor): Wavefunction.
@@ -238,7 +278,7 @@ class Dynamics:
         Returns:
             energy (np.ndarray): Energy per particle.
         """
-        H_psi = SR.hamiltonian(psi[:,0].unsqueeze(-1), x_grid)  # Apply Hamiltonian to psi
+        H_psi = SR.hamiltonian(psi, x_grid)  # Apply Hamiltonian to psi
         energy = torch.vdot(psi[:,0], H_psi[:,0]) / torch.vdot(psi[:,0], psi[:,0])
         return energy
     

@@ -8,22 +8,20 @@ from torch.autograd import grad
 import utilities as utils
 import parameters as pm
 
+def compute_energy(model, grid, hamiltonian):
+    psi = model(grid)
+    H_psi = hamiltonian(psi, grid)  # Apply Hamiltonian to psi
+    energy = torch.vdot(psi[:,0], H_psi[:,0]) / torch.vdot(psi[:,0], psi[:,0])
+    return energy
+
 # -----------------------------------------------------------------
 # Function to compute the Hamiltonian
-def hamiltonian(psi, grid):    
-    # Split wavefunction
-    u =       0.5 * (psi + psi.conj())
-    v = -1j * 0.5 * (psi - psi.conj())  
+def hamiltonian(psi, grid): 
 
     # Kinetic term
-    (du_dx, _) = torch.view_as_real(utils.nth_derivative(u, grid, 1)).type_as(u).unbind(-1)
-    (dv_dx, _) = torch.view_as_real(utils.nth_derivative(v, grid, 1)).type_as(v).unbind(-1)
-    (d2u_d2x, _) = torch.view_as_real(utils.nth_derivative(du_dx, grid, 1)).type_as(u).unbind(-1)
-    (d2v_d2x, _) = torch.view_as_real(utils.nth_derivative(dv_dx, grid, 1)).type_as(v).unbind(-1)
-
-    d2psi_d2x = d2u_d2x + 1j * d2v_d2x
-
-    kinetic = -(1/2) * d2psi_d2x    
+    kinetic = -(1/2) * utils.second_derivative(psi, grid)  
+    # kinetic = -(1/2) * utils.nth_derivative(psi, grid, 2)    
+  
     # Potential term
     potential = (1/2) * pm.w ** 2 * (grid - pm.x0).pow(2) * psi  
     # Gaussian barrier
@@ -44,10 +42,6 @@ def compute_wirtinger_jacobian(model, outputs):
     Return:
         jacobian    (tensor): contains the derivatives of the outputs wrt the parameters of the model
     '''  
-
-    # TRace anomalies
-    # if pm.evo == 'real':
-    #     torch.autograd.set_detect_anomaly(True) 
 
     # Split wavefunction into real and imaginary
     u =       0.5 * (outputs + outputs.conj())

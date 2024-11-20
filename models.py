@@ -82,8 +82,8 @@ class NQS(nn.Module):
             weights, biases = self.initialize_weights_and_biases_xavier(input_size, hidden_layers, output_size)
             # Complex weights and biases
             for i, (weight, bias) in enumerate(zip(weights, biases)):
-                weights[i] = torch.view_as_complex(torch.stack((weight, weight * torch.rand(1)), -1))
-                biases[i] = torch.view_as_complex(torch.stack((bias, bias * torch.rand(1)), -1))
+                weights[i] = torch.view_as_complex(torch.stack((weight, weight * 0), -1))
+                biases[i] = torch.view_as_complex(torch.stack((bias, bias * 0), -1))
 
             self._initialize_weights_and_biases(weights, biases)
 

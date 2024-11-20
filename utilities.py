@@ -13,35 +13,79 @@ def is_hermitian(A):
 def eye_like(tensor):
     return torch.eye(*tensor.size(), out=torch.empty_like(tensor))
 
-def nth_derivative(f, x, n):
+def derivative(f, x):
     """
-    Compute the n-th derivative of function f(x) at x.
+    Compute the derivative of function f(x) at x.
 
     Args:
-        f (torch.Tensor): A tensor to compute the second derivative wrt x of dimension [N,M]                    
-        x (torch.Tensor): A tensor at which to compute the second derivative of dimension N.
-        n (constant): n-th derivative
+        f (torch.Tensor): Function that depends on x.                    
+        x (torch.Tensor): Parameters of f.
 
     Returns:
-        dndy (torch.Tensor): n-th derivative of f at x.
+        dfdx (torch.Tensor): Derivative of f at x.
     """
-    
-    # Initialize tensor for the derivatives
-    # dndy = torch.empty_like(f)
-    for ii in range(f.shape[1]):
-        outputs = f[:,ii]
-        # n-th derivative
-        for _ in range(n):
-            outputs, = grad(outputs=outputs,
-                            inputs=x,
-                            grad_outputs=torch.ones_like(outputs).type_as(outputs),
+    try:
+        dfdx, = grad(
+                    outputs=f,
+                    inputs=x,
+                    grad_outputs=torch.ones_like(f).type_as(f),
+                    create_graph=True
+                    )
+    except Exception as error:
+        print(f"x_grid dtype: {x.dtype}, requires_grad: {x.requires_grad}")
+        print(f"psi dtype: {f.dtype}, requires_grad: {f.requires_grad}")
+        print('Error: ', error)
+
+    return dfdx
+
+def second_derivative(f, x):
+    # Split function
+    u =       0.5 * (f + f.conj())
+    v = -1j * 0.5 * (f - f.conj())  
+
+    (du_dx, _) = torch.view_as_real(derivative(u, x)).type_as(u).unbind(-1)
+    (dv_dx, _) = torch.view_as_real(derivative(v, x)).type_as(v).unbind(-1)
+    (d2u_d2x, _) = torch.view_as_real(derivative(du_dx, x)).type_as(u).unbind(-1)
+    (d2v_d2x, _) = torch.view_as_real(derivative(dv_dx, x)).type_as(v).unbind(-1)
+
+    return d2u_d2x + 1j * d2v_d2x
+
+def nth_derivative(f, z, n):
+    """
+    Compute the n-th Wirtinger derivative of function f(z) wrt z.
+
+    Args:
+        f (torch.Tensor): Function that depends on z.                    
+        z (torch.Tensor): Parameters of f.
+
+    Returns:
+        dnf_dnz (torch.Tensor): n-th derivative of f at z.
+    """
+    # Placeholder
+    dnf_dnz = torch.empty_like(f)
+
+    for _ in range(n):
+        # Split function
+        u =       0.5 * (dnf_dnz + dnf_dnz.conj())
+        v = -1j * 0.5 * (dnf_dnz - dnf_dnz.conj())  
+
+        # Partial derivatives
+        (du_dx, du_dy) = grad(
+                            outputs=u,
+                            inputs=z,
+                            grad_outputs=torch.ones_like(u).type_as(u),
                             create_graph=True
                             )
-      
-       # Store the n-th derivative
-        # dndy[:,ii].copy_(outputs[:,0])
+        (dv_dx, dv_dy) = grad(
+                            outputs=v,
+                            inputs=z,
+                            grad_outputs=torch.ones_like(v).type_as(v),
+                            create_graph=True
+                            )
+        # Wirtinger derivative
+        dnf_dnz = 0.5 * (du_dx + 1j*dv_dx - 1j*du_dy + dv_dy)
 
-    return outputs
+    return dnf_dnz
 
 
 def regularize_qgt(S, method="diagonal_shift", lambda_reg=0.01, clip_value=1.0):

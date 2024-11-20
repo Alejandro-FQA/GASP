@@ -99,6 +99,19 @@ def integrator(model, x_grid, t_grid=None, file_path=pm.file_path):
     # Save the model state at initial time step in HDF5
     analysis.save_model_states(model, time_step=0, file_path=file_path)
 
+    ## TEMPORAL PARAMETERES TO CHECK OUTPUTS
+    # wavefunction
+    psi = model(x_grid).squeeze(1)  
+    # temporal normalization    
+    norm = torch.empty_like(torch.tensor(t_grid))
+    norm[0] = torch.vdot(psi, psi).real
+    # temporal psi
+    psi_rk4 = torch.empty((1, len(x_grid), len(t_grid)), dtype=torch.complex128)  
+    psi_rk4[:,:,0] = psi / torch.sqrt(norm[0])
+    # temporal energy
+    energy = torch.empty_like(torch.tensor(t_grid))
+    energy[0] = SR.compute_energy(model, x_grid, SR.hamiltonian).real
+
     # For each data time
     for it in tqdm(range(1, len(t_grid))):
         # For each time step
@@ -113,7 +126,18 @@ def integrator(model, x_grid, t_grid=None, file_path=pm.file_path):
             vector_to_parameters(u, model.parameters())
         # Save the model state at this time step in HDF5
         analysis.save_model_states(model, time_step=it, file_path=file_path)
+
+        ## UPDATE TEMPORAL PARAMETERS
+        psi = model(x_grid).squeeze(1)
+        norm[it] = torch.vdot(psi, psi).real
+
+        # Update data
+        psi_rk4[:,:,it] = psi / torch.sqrt(norm[it])
+        energy[it] = SR.compute_energy(model, x_grid, SR.hamiltonian).real
         
+    return psi_rk4.clone().detach().numpy(), \
+           norm.clone().detach().numpy(), \
+           energy.clone().detach().numpy()
 # -----------------------------------------------------------------
 def RK4(u, model, grid):
 
