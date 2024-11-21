@@ -30,7 +30,7 @@ seed = 1
 torch.manual_seed(seed)
 
 # Choose model
-architecture = 'GASP'
+architecture = 'NQS'
 match architecture:
     case 'GASP':
         # Create the NN model
@@ -97,8 +97,8 @@ pm.x0 = 0
 pm.w = 1
 
 # Time parameters
-pm.dt = 0.1
-pm.t_max = 10
+pm.dt = 0.01
+pm.t_max = 25
 
 # Integrator parameters
 pm.evolution = 'real'

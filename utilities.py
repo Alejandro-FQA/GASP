@@ -88,18 +88,18 @@ def nth_derivative(f, z, n):
     return dnf_dnz
 
 
-def regularize_qgt(S, method="diagonal_shift", lambda_reg=0.01, clip_value=1.0):
+def regularize_matrix(S, method="diagonal_shift", lambda_reg=0.01, clip_value=1.0):
     """
-    Apply regularization to a Quantum Geometric Tensor (QGT).
+    Apply regularization to a matrix.
     
     Parameters:
-    - S (torch.Tensor): Complex-valued QGT matrix.
+    - S (torch.Tensor): Complex-valued matrix.
     - method (str): The regularization method to apply.
     - lambda_reg (float): Regularization strength.
     - clip_value (float): Value for clipping in weight clipping.
     
     Returns:
-    - torch.Tensor: Regularized QGT matrix.
+    - torch.Tensor: Regularized matrix.
     """
     # Ensure S is complex and square
     assert S.dtype == torch.cfloat or S.dtype == torch.cdouble, "S must be a complex tensor"

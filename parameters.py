@@ -20,7 +20,7 @@ steps = 10
 file_path = "model_states.h5"
 
 # Regularization parameters
-lambda_reg = 1e-8 * (1 + 1j)
+lambda_reg = 1e-5 * (1 + 1j)
 reg = 'diagonal_shift'
 
 # Gaussian barrier

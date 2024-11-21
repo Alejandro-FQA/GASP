@@ -53,7 +53,7 @@ def EOM(parameters, model, grid):
     S = SR.compute_qgt(psi, jacobian)
 
     # QGT regularization
-    # Sr = utils.regularize_qgt(S, pm.reg, pm.lambda_reg)
+    # S = utils.regularize_matrix(S, pm.reg, pm.lambda_reg)
     S +=  utils.eye_like(S) * pm.lambda_reg
 
     # Moore-Penrose psudo-inverse    

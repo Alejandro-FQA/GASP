@@ -35,7 +35,7 @@ def evo_fig_params(time, mesh, den, params, fig_name='output.pdf'):
         tx = 0.01
         ty = 0.05
 
-        labels = [r'$\theta_{j}$' for j in range(num_params)]  # Labels for legend
+        labels = [r'$\theta_{%i}$' % j for j in range(num_params)]  # Labels for legend
 
     # Line styles and labels for each parameter line
     colors = ['tab:blue', 'tab:orange', 'tab:green', 'tab:red', 'tab:purple', 'tab:brown', 'tab:pink', 'tab:gray', 'tab:olive', 'tab:cyan']  # Colors for each parameter
@@ -61,7 +61,7 @@ def evo_fig_params(time, mesh, den, params, fig_name='output.pdf'):
     # Add colorbar to the side without affecting panel width
     cbar = fig.colorbar(pcm, ax=axs[0], pad=0.01, aspect=10, orientation='vertical')
     cbar.set_label(r'$|\psi(x,t)|^2$')
-    cbar.set_ticks(np.linspace(0,round(max(map(max, den)),2),4))
+    cbar.set_ticks(np.round(np.linspace(0,max(map(max, den)),4),2))
 
     # Middle Panel
     for i in range(real_params.shape[1]):
@@ -69,7 +69,7 @@ def evo_fig_params(time, mesh, den, params, fig_name='output.pdf'):
     axs[1].set_ylabel(r'${\rm Re}(\theta_j)$')
     axs[1].tick_params(labelbottom=False, length=5)
     axs[1].set_xticks(np.linspace(0, t_max, 6))
-    axs[1].set_ylim([lim * 1 for lim in [-1.25, 1.25]])
+    # axs[1].set_ylim([lim * 1 for lim in [-1.25, 1.25]])
     axs[1].text(tx,ty, r"${\rm (b)}$",
                 horizontalalignment=ha,
                 verticalalignment=va,
@@ -83,7 +83,7 @@ def evo_fig_params(time, mesh, den, params, fig_name='output.pdf'):
     axs[2].set_ylabel(r'${\rm Im}(\theta_j)$')
     axs[2].tick_params(labelbottom=True, length=5)
     axs[2].set_xticks(np.linspace(0, t_max, 6)) 
-    axs[2].set_ylim([lim * 1 for lim in [-1.25, 1.25]])
+    # axs[2].set_ylim([lim * 1 for lim in [-1.25, 1.25]])
     axs[2].text(tx, ty, r"${\rm (c)}$",
                 horizontalalignment=ha,
                 verticalalignment=va,
@@ -96,9 +96,10 @@ def evo_fig_params(time, mesh, den, params, fig_name='output.pdf'):
     # Add a figure-level legend below the colorbar
     fig.legend(handles, labels,
                loc='upper left',
-               bbox_to_anchor=(0.8, 0.525),
+               bbox_to_anchor=(0.8, 0.7),
                ncol=1,
                fontsize=10, 
+               frameon=False
                )
     
     # Adjust vertical spacing
