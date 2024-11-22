@@ -20,6 +20,8 @@ steps = 10
 data_dir = "./data/"
 figs_dir = "./figs/"
 file_path = "model_states.h5"
+overwrite = False
+version = 1
 
 # Regularization parameters
 lambda_reg = 1e-5 * (1 + 1j)

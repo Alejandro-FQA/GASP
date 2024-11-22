@@ -59,7 +59,7 @@ match architecture:
         
 
 # Model ID
-file_ID = lambda *args: "_".join(args)
+file_name = lambda *args: "_".join(args)
 
 # Create a spacial grid object
 grid = utils.PointGrid(100, start=-8, end=8)
@@ -84,7 +84,9 @@ pm.t_max = 10
 pm.evolution = 'imag'
 
 # Perform imag time evolution
-file_path = pm.data_dir + file_ID(architecture, net_ark, pm.evolution) + ".h5"
+file_path = utils.file_ID(pm.data_dir,
+                          file_name(architecture, net_ark, pm.evolution),
+                          ".h5")
 integrator(model, x_grid, file_path=file_path)
 
 # Get the dynamics
@@ -95,7 +97,9 @@ den = np.abs(imag_evo.psi)**2
 params = imag_evo.get_params()
 
 # Plot data
-fig_path = pm.figs_dir + file_ID(architecture, net_ark, pm.evolution) + ".png"
+fig_path = utils.file_ID(pm.figs_dir,
+                         file_name(architecture, net_ark, pm.evolution),
+                         ".png")
 plots.evo_fig_params(imag_evo.t_grid, mesh, den.T, params, fig_path=fig_path)
 
 #%% Stochastic Reconfiguration
@@ -111,7 +115,9 @@ pm.t_max = 10
 pm.evolution = 'real'
 
 # Perform real time evolution
-file_path = pm.data_dir + file_ID(architecture, net_ark, pm.evolution) + ".h5"
+file_path = utils.file_ID(pm.data_dir,
+                          file_name(architecture, net_ark, pm.evolution),
+                          ".h5")
 integrator(model, x_grid, file_path=file_path)
 
 # Get the dynamics
@@ -122,7 +128,9 @@ den = np.abs(real_evo.psi)**2
 params = real_evo.get_params()
 
 # Plot data
-fig_path = pm.figs_dir + file_ID(architecture, net_ark, pm.evolution) + ".png"
+fig_path = utils.file_ID(pm.figs_dir,
+                         file_name(architecture, net_ark, pm.evolution),
+                         ".png")
 plots.evo_fig_params(real_evo.t_grid, mesh, den.T, params, fig_path=fig_path)
 
 # %%

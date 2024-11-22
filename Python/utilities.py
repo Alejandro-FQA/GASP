@@ -3,9 +3,37 @@ import torch
 from torch.autograd import grad
 
 import numpy as np
+import os
 
 # Custom imports
 import parameters as pm
+
+def file_ID(directory, file_name, format):
+    """
+    Check if a file exists.
+    If it exists and do not want to overwrite it, change name.
+
+    Args:
+        directory (str): path to directory.                    
+        file_name (str): file name.
+        format (str): file format.
+
+    Returns:
+        file_path (str): Path to file.
+    """
+    file_path = directory + file_name + format
+    id = pm.version
+    # Check if original file exists
+    if os.path.exists(file_path) and not pm.overwrite:
+        file_path = directory + file_name + f"_v{id}" +  format
+    # Check if version files exist
+    while os.path.exists(file_path) and not pm.overwrite:
+        id += 1
+        file_path = directory + file_name + f"_v{id}" +  format
+
+    pm.version = id
+    print(f"This file is version is v{id}")
+    return file_path
 
 def is_hermitian(A):
     return torch.allclose(A, A.conj().T)
