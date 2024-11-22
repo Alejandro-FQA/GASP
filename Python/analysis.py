@@ -5,6 +5,7 @@ import io
 import numpy as np
 
 import stochastic_reconfiguration as SR
+import parameters as pm
 
 # -----------------------------------------------------------------
 def save_model_architecture(model, file_path):
@@ -23,9 +24,17 @@ def save_model_architecture(model, file_path):
     
     # Store in HDF5
     with h5py.File(file_path, 'a') as f:
+        # Save model architecture if it hasn't been saved yet
         if "model_architecture" in f:
             del f["model_architecture"]  # Remove existing architecture if it exists
         f.create_dataset("model_architecture", data=np.void(model_data))
+
+        # Save additional parameters if they haven't been saved yet
+        if "parameters" not in f:
+            f.create_group("parameters")
+            for attr in dir(pm):
+                if not attr.startswith("__"):  # Skip special attributes
+                    f["parameters"].attrs[attr] = getattr(pm, attr)
 
 # -----------------------------------------------------------------
 def load_model_architecture(file_path):
@@ -158,6 +167,24 @@ class Dynamics:
             group = f[f"time_{time_step}"]
             state_dict = {key: torch.tensor(np.array(group[key])) for key in group.keys()}
         self.model.load_state_dict(state_dict)
+
+    def load_model_parameters(self):
+        """
+        Loads parameters.py from an HDF5 file.
+
+        Args:
+            file_path (str): Path to the HDF5 file containing the parameters.
+
+        Returns:
+            dict: dictionary containing parameters.
+        """
+        # Load additional parameters
+        additional_params = {}
+        with h5py.File(self.file_path, 'r') as f:
+            if "parameters" in f:
+                for key, value in f["parameters"].attrs.items():
+                    additional_params[key] = value
+        return additional_params
 
     def compute_psi(self, x_grid=None, time_step=None):
         """
