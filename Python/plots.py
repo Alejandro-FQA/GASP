@@ -1,11 +1,14 @@
 import matplotlib.pyplot as plt
 import numpy as np
+import os
+
+import parameters as pm
 
 # Enable LaTeX labels in Matplotlib
 plt.rcParams['text.usetex'] = True
 plt.rcParams['font.size'] = 12  # Optional: set the font size for clarity
 
-def evo_fig_params(time, mesh, den, params, fig_name='output.pdf'):
+def evo_fig_params(time, mesh, den, params, fig_path='output.pdf'):
     
     # define variables
     t_max = max(time)
@@ -108,5 +111,8 @@ def evo_fig_params(time, mesh, den, params, fig_name='output.pdf'):
 
     plt.show()
 
+    # Ensure figs directory exists
+    if not os.path.exists(pm.figs_dir):
+        os.makedirs(pm.figs_dir)
     # Save the figure
-    fig.savefig(fig_name, format='png', bbox_inches='tight', transparent=True)
+    fig.savefig(fig_path, format='png', bbox_inches='tight', transparent=True)

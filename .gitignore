@@ -1,4 +1,5 @@
-__pycache__/
+Python/__pycache__/
+Python/data/
+Python/figs/
 latex/
-model_states_imag_evo.h5
-model_states_real_evo.h5
+

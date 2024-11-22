@@ -4,6 +4,7 @@ from torch.nn.utils import parameters_to_vector, vector_to_parameters
 
 import numpy as np
 from tqdm import tqdm
+import os
 
 # Custom imports
 import utilities as utils
@@ -83,6 +84,10 @@ def integrator(model, x_grid, t_grid=None, file_path=pm.file_path):
         If not given, default will be used.
         fiel_path (str): Path to the HDF5 file where the model is saved.
     """
+    # Ensure data directory exists
+    if not os.path.exists(pm.data_dir):
+        os.makedirs(pm.data_dir)
+
     # Save model architecture and time steps
     analysis.save_model_architecture(model, file_path)
     if not t_grid:

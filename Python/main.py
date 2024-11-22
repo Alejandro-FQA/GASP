@@ -30,11 +30,12 @@ seed = 1
 torch.manual_seed(seed)
 
 # Choose model
-architecture = 'NQS'
+architecture = 'GASP'
 match architecture:
     case 'GASP':
         # Create the NN model
-        num_params = 2 # only 1 or 2 parameters
+        num_params = 1 # only 1 or 2 parameters
+        net_ark = f"{num_params}"
         model = Gaussian(num_params).to(device) 
 
         # Define Parameters
@@ -51,10 +52,15 @@ match architecture:
         # Network architecture
         input_size = 1
         output_size = 1
-        hidden_layers = [1]
+        hidden_layers = [2]
+        net_ark = "-".join(map(str, [input_size, *hidden_layers, output_size]))        
         # Create Neural Quantum State
         model = NQS(input_size, output_size, hidden_layers).to(device)
         
+
+# Model ID
+file_ID = lambda *args: "_".join(args)
+
 # Create a spacial grid object
 grid = utils.PointGrid(100, start=-8, end=8)
                                     
@@ -71,25 +77,26 @@ pm.x0 = 1
 pm.w = 1
 
 # Time parameters
-pm.dt = 0.01
+pm.dt = 0.1
 pm.t_max = 10
 
 # Integrator parameters
 pm.evolution = 'imag'
 
 # Perform imag time evolution
-imag_file_path = 'model_states_imag_evo.h5'
-integrator(model, x_grid, file_path=imag_file_path)
+file_path = pm.data_dir + file_ID(architecture, net_ark, pm.evolution) + ".h5"
+integrator(model, x_grid, file_path=file_path)
 
 # Get the dynamics
-imag_evo = Dynamics(file_path=imag_file_path, x_grid=x_grid)
+imag_evo = Dynamics(file_path=file_path, x_grid=x_grid)
 # Compute density
 den = np.abs(imag_evo.psi)**2
 # Get parameters
 params = imag_evo.get_params()
 
 # Plot data
-plots.evo_fig_params(imag_evo.t_grid, mesh, den.T, params, fig_name='evo_imag.png')
+fig_path = pm.figs_dir + file_ID(architecture, net_ark, pm.evolution) + ".png"
+plots.evo_fig_params(imag_evo.t_grid, mesh, den.T, params, fig_path=fig_path)
 
 #%% Stochastic Reconfiguration
 # Initial conditions
@@ -97,24 +104,25 @@ pm.x0 = 0
 pm.w = 1
 
 # Time parameters
-pm.dt = 0.01
-pm.t_max = 25
+pm.dt = 0.1
+pm.t_max = 10
 
 # Integrator parameters
 pm.evolution = 'real'
 
 # Perform real time evolution
-real_file_path = 'model_states_real_evo.h5'
-integrator(model, x_grid, file_path=real_file_path)
+file_path = pm.data_dir + file_ID(architecture, net_ark, pm.evolution) + ".h5"
+integrator(model, x_grid, file_path=file_path)
 
 # Get the dynamics
-real_evo = Dynamics(file_path=real_file_path, x_grid=x_grid)
+real_evo = Dynamics(file_path=file_path, x_grid=x_grid)
 # Compute density
 den = np.abs(real_evo.psi)**2
 # Get parameters
 params = real_evo.get_params()
 
 # Plot data
-plots.evo_fig_params(real_evo.t_grid, mesh, den.T, params, fig_name='evo_real.png')
+fig_path = pm.figs_dir + file_ID(architecture, net_ark, pm.evolution) + ".png"
+plots.evo_fig_params(real_evo.t_grid, mesh, den.T, params, fig_path=fig_path)
 
 # %%

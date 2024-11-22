@@ -17,6 +17,8 @@ e_error = 1e-8
 steps = 10
 
 # Path to save data
+data_dir = "./data/"
+figs_dir = "./figs/"
 file_path = "model_states.h5"
 
 # Regularization parameters
