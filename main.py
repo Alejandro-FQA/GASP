@@ -51,7 +51,7 @@ match architecture:
         # Network architecture
         input_size = 1
         output_size = 1
-        hidden_layers = [2]
+        hidden_layers = [1]
         # Create Neural Quantum State
         model = NQS(input_size, output_size, hidden_layers).to(device)
         
@@ -71,7 +71,7 @@ pm.x0 = 1
 pm.w = 1
 
 # Time parameters
-pm.dt = 0.1
+pm.dt = 0.01
 pm.t_max = 10
 
 # Integrator parameters

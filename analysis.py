@@ -198,7 +198,7 @@ class Dynamics:
             psi.append((output[:,0] / np.sqrt(norm[time_step])).detach().numpy())
             energy.append(SR.compute_energy(output, x_grid).detach().numpy())
 
-        return np.array(psi), np.array(norm), np.array(energy)
+        return np.array(psi), np.array(norm).real, np.array(energy).real
     
     def compute_variance(self):
         """

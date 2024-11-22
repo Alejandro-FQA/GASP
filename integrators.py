@@ -122,16 +122,21 @@ def integrator(model, x_grid, t_grid=None, file_path=pm.file_path):
             # Check for convergence
             if pm.stopper and pm.evolution == 'imag':
                 energy = SR.compute_energy(model(x_grid), x_grid)
+                # Check for NaN
+                if torch.isnan(energy):
+                    raise ValueError(f"NaN encountered in energy calculation at time step {it}." +\
+                                      "Check parameters: dt, lambda_reg, reg.")
                 e_diff  = abs(energy - e0)
                 pbar.set_postfix_str(f"Energy error: {e_diff:.2e}")
                 if e_diff <= pm.e_error:
                     check_point += 1
-                    if check_point == pm.steps:
+                    if check_point == pm.steps // t_step + 1:
                         t_grid = t_grid[:it+1]
                         print('Convergence reached')
                         break
                 else:
                     e0 = energy
+                    check_point = 0
             pbar.update(1)        
         analysis.save_variable(t_grid, "t_grid", file_path)
 # -----------------------------------------------------------------

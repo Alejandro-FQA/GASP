@@ -65,7 +65,7 @@ def evo_fig_params(time, mesh, den, params, fig_name='output.pdf'):
 
     # Middle Panel
     for i in range(real_params.shape[1]):
-        axs[1].plot(time, real_params[:,i], color=colors[i], linestyle=line_styles[i], label=labels[i])
+        axs[1].plot(time, real_params[:,i], color=colors[i%7], linestyle=line_styles[i%7], label=labels[i])
     axs[1].set_ylabel(r'${\rm Re}(\theta_j)$')
     axs[1].tick_params(labelbottom=False, length=5)
     axs[1].set_xticks(np.linspace(0, t_max, 6))
@@ -78,11 +78,12 @@ def evo_fig_params(time, mesh, den, params, fig_name='output.pdf'):
     
     # Bottom Panel
     for i in range(imag_params.shape[1]):
-        axs[2].plot(time, imag_params[:,i], color=colors[i], linestyle=line_styles[i], label=labels[i])
+        axs[2].plot(time, imag_params[:,i], color=colors[i%7], linestyle=line_styles[i%7], label=labels[i])
     axs[2].set_xlabel(r'$t/\tau$')
     axs[2].set_ylabel(r'${\rm Im}(\theta_j)$')
     axs[2].tick_params(labelbottom=True, length=5)
-    axs[2].set_xticks(np.linspace(0, t_max, 6)) 
+    # axs[2].set_xticks(np.linspace(0, t_max, 6)) 
+    axs[2].set_xticks(np.round(np.linspace(0,max(time),6),1))
     # axs[2].set_ylim([lim * 1 for lim in [-1.25, 1.25]])
     axs[2].text(tx, ty, r"${\rm (c)}$",
                 horizontalalignment=ha,
@@ -97,7 +98,7 @@ def evo_fig_params(time, mesh, den, params, fig_name='output.pdf'):
     fig.legend(handles, labels,
                loc='upper left',
                bbox_to_anchor=(0.8, 0.7),
-               ncol=1,
+               ncol=np.ceil(num_params / 7),
                fontsize=10, 
                frameon=False
                )
