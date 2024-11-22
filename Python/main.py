@@ -52,7 +52,7 @@ match architecture:
         # Network architecture
         input_size = 1
         output_size = 1
-        hidden_layers = [2]
+        hidden_layers = [3]
         net_ark = "-".join(map(str, [input_size, *hidden_layers, output_size]))        
         # Create Neural Quantum State
         model = NQS(input_size, output_size, hidden_layers).to(device)

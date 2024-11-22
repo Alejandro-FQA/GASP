@@ -21,18 +21,22 @@ def file_ID(directory, file_name, format):
     Returns:
         file_path (str): Path to file.
     """
+    # TODO: fails when original file has been deleted
     file_path = directory + file_name + format
-    id = pm.version
+    v_id = pm.version
+    msg = False
     # Check if original file exists
     if os.path.exists(file_path) and not pm.overwrite:
-        file_path = directory + file_name + f"_v{id}" +  format
+        file_path = directory + file_name + f"_v{v_id}" +  format
+        msg = True
     # Check if version files exist
     while os.path.exists(file_path) and not pm.overwrite:
-        id += 1
-        file_path = directory + file_name + f"_v{id}" +  format
+        v_id += 1
+        file_path = directory + file_name + f"_v{v_id}" +  format
+        msg = True
 
-    pm.version = id
-    print(f"This file is version is v{id}")
+    pm.version = v_id
+    if msg: print(f"This file is version is v{v_id}")
     return file_path
 
 def is_hermitian(A):

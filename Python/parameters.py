@@ -20,7 +20,7 @@ steps = 10
 data_dir = "./data/"
 figs_dir = "./figs/"
 file_path = "model_states.h5"
-overwrite = False
+overwrite = True
 version = 1
 
 # Regularization parameters
