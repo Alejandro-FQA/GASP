@@ -30,8 +30,8 @@ seed = 1
 torch.manual_seed(seed)
 
 # Choose model
-architecture = 'GASP'
-match architecture:
+pm.architecture = 'NQS'
+match pm.architecture:
     case 'GASP':
         # Create the NN model
         num_params = 1 # only 1 or 2 parameters
@@ -52,7 +52,7 @@ match architecture:
         # Network architecture
         input_size = 1
         output_size = 1
-        hidden_layers = [3]
+        hidden_layers = [2]
         net_ark = "-".join(map(str, [input_size, *hidden_layers, output_size]))        
         # Create Neural Quantum State
         model = NQS(input_size, output_size, hidden_layers).to(device)
@@ -77,15 +77,15 @@ pm.x0 = 1
 pm.w = 1
 
 # Time parameters
-pm.dt = 0.1
-pm.t_max = 10
+pm.dt = 0.01
+pm.t_max = 100
 
 # Integrator parameters
 pm.evolution = 'imag'
 
 # Perform imag time evolution
 file_path = utils.file_ID(pm.data_dir,
-                          file_name(architecture, net_ark, pm.evolution),
+                          file_name(pm.architecture, net_ark, pm.evolution),
                           ".h5")
 integrator(model, x_grid, file_path=file_path)
 
@@ -98,7 +98,7 @@ params = imag_evo.get_params()
 
 # Plot data
 fig_path = utils.file_ID(pm.figs_dir,
-                         file_name(architecture, net_ark, pm.evolution),
+                         file_name(pm.architecture, net_ark, pm.evolution),
                          ".png")
 plots.evo_fig_params(imag_evo.t_grid, mesh, den.T, params, fig_path=fig_path)
 
@@ -108,15 +108,15 @@ pm.x0 = 0
 pm.w = 1
 
 # Time parameters
-pm.dt = 0.1
-pm.t_max = 10
+pm.dt = 0.01
+pm.t_max = 50
 
 # Integrator parameters
 pm.evolution = 'real'
 
 # Perform real time evolution
 file_path = utils.file_ID(pm.data_dir,
-                          file_name(architecture, net_ark, pm.evolution),
+                          file_name(pm.architecture, net_ark, pm.evolution),
                           ".h5")
 integrator(model, x_grid, file_path=file_path)
 
@@ -129,7 +129,7 @@ params = real_evo.get_params()
 
 # Plot data
 fig_path = utils.file_ID(pm.figs_dir,
-                         file_name(architecture, net_ark, pm.evolution),
+                         file_name(pm.architecture, net_ark, pm.evolution),
                          ".png")
 plots.evo_fig_params(real_evo.t_grid, mesh, den.T, params, fig_path=fig_path)
 

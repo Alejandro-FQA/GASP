@@ -16,7 +16,7 @@ def evo_fig_params(time, mesh, den, params, fig_path='output.pdf'):
     imag_params = np.imag(params)
     num_params = params.shape[1]
 
-    if num_params == 1:
+    if num_params == 1 and pm.architecture == 'GASP':
         ha = 'left'
         va = 'top'
         tx = 0.01
@@ -24,7 +24,7 @@ def evo_fig_params(time, mesh, den, params, fig_path='output.pdf'):
 
         labels = [r'$z$']  # Labels for legend
 
-    elif num_params == 2:
+    elif num_params == 2 and pm.architecture == 'GASP':
         ha = 'left'
         va = 'bottom'
         tx = 0.01

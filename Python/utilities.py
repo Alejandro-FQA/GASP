@@ -36,7 +36,7 @@ def file_ID(directory, file_name, format):
         msg = True
 
     pm.version = v_id
-    if msg: print(f"This file is version is v{v_id}")
+    if msg: print(f"This file version is v{v_id}")
     return file_path
 
 def is_hermitian(A):

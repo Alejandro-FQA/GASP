@@ -1,3 +1,5 @@
+# Architecture
+architecture = 'NQS'
 
 # Trapping potential
 x0 = 0.
@@ -16,15 +18,15 @@ stopper = True
 e_error = 1e-8
 steps = 10
 
-# Path to save data
+# PArameteres to save data
 data_dir = "./data/"
 figs_dir = "./figs/"
 file_path = "model_states.h5"
-overwrite = True
+overwrite = False
 version = 1
 
 # Regularization parameters
-lambda_reg = 1e-5 * (1 + 1j)
+lambda_reg = 1e-3 * (1 + 1j)
 reg = 'diagonal_shift'
 
 # Gaussian barrier
