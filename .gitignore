@@ -2,4 +2,4 @@ Python/__pycache__/
 Python/data/
 Python/figs/
 LaTeX/*
-!LaTeX/GASP.pdf         # exclude the PDF from being ignored
+!LaTeX/GASP.pdf
