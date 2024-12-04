@@ -24,7 +24,7 @@ In both cases, we use SR to obtain the ground state and perform subsequent dynam
 │   └── utilities.py                        > useful methods
 ├── .gitignore
 ├── environment_simple.yml
-├── environment.yml                         # environment dependencies
+├── environment.yml                     # environment dependencies
 ├── LICENSE
 └── README.md
 ```
