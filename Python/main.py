@@ -77,8 +77,8 @@ pm.x0 = 1
 pm.w = 1
 
 # Time parameters
-pm.dt = 0.01
-pm.t_max = 100
+pm.dt = 0.1
+pm.t_max = 50
 
 # Integrator parameters
 pm.evolution = 'imag'
@@ -108,7 +108,7 @@ pm.x0 = 0
 pm.w = 1
 
 # Time parameters
-pm.dt = 0.01
+pm.dt = 0.1
 pm.t_max = 50
 
 # Integrator parameters
@@ -132,5 +132,30 @@ fig_path = utils.file_ID(pm.figs_dir,
                          file_name(pm.architecture, net_ark, pm.evolution),
                          ".png")
 plots.evo_fig_params(real_evo.t_grid, mesh, den.T, params, fig_path=fig_path)
+
+# %% Compare with analytic results
+# Analytic data
+x0 = 1
+p0 = 0
+
+x = x0 * np.cos(real_evo.t_grid) + p0 * np.sin(real_evo.t_grid)
+p = p0 * np.cos(real_evo.t_grid) - x0 * np.sin(real_evo.t_grid)
+
+xx = mesh.numpy()[:, np.newaxis]
+
+target = (1/np.pi)**(1/4) * np.exp(-0.5 * (xx - x)**2) \
+                          * np.exp(1j * xx * p) \
+                          * np.exp(-1j/2 * x * p) \
+                          * np.exp(1j/2 * real_evo.t_grid*0) \
+                          * np.sqrt(grid.get_spacing()) # match normalization
+target_den = np.abs(target)**2 
+target_energy = 0.5 * (1 + p**2 + x**2)
+
+den_diff = den.T - target_den
+energy_diff = real_evo.energy - target_energy
+
+fig_path = fig_path[:-4] + "_compare.png"
+plots.evo_fig_compare(real_evo.t_grid, mesh, den_diff, energy_diff, fig_path=fig_path)
+
 
 # %%

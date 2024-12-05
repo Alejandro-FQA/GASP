@@ -1,4 +1,6 @@
 import matplotlib.pyplot as plt
+from matplotlib.colors import TwoSlopeNorm
+
 import numpy as np
 import os
 
@@ -116,3 +118,68 @@ def evo_fig_params(time, mesh, den, params, fig_path='output.pdf'):
         os.makedirs(pm.figs_dir)
     # Save the figure
     fig.savefig(fig_path, format='png', bbox_inches='tight', transparent=True)
+
+def evo_fig_compare(time, mesh, den, energy, fig_path='compare.png'):
+    
+    # define variables
+    t_max = max(time)
+
+    ha = 'left'
+    va = 'bottom'
+    tx = 0.01
+    ty = 0.05
+
+    # Line styles and labels for each parameter line
+    colors = ['tab:blue', 'tab:orange', 'tab:green', 'tab:red', 'tab:purple', 'tab:brown', 'tab:pink', 'tab:gray', 'tab:olive', 'tab:cyan']  # Colors for each parameter
+    line_styles = ['-', '--', '-.', ':', (0, (1, 1)), (0, (5, 1)), (0, (3, 5, 1, 5)), (0, (3, 1, 1, 1)), (0, (5, 2, 5, 2, 5, 10)), (0, (5, 1, 3, 1, 3, 1))]  # Custom dash patterns
+
+    # Create the figure and GridSpec layout
+    fig, axs = plt.subplots(2,1, figsize=(4, 3), sharex=True, layout='constrained')
+
+    # Create a diverging colormap centered at zero
+    cmap = 'seismic'
+    vmin = np.round(np.min(den),2)
+    vmax = np.round(np.max(den),2)
+    norm = TwoSlopeNorm(vmin = vmin, vcenter=0, vmax=vmax)
+
+    # Top Panel
+    pcm = axs[0].pcolor(time, mesh, den, cmap=cmap, norm=norm, shading='auto')
+    axs[0].set_ylabel(r'$x/a_0$')
+    axs[0].tick_params(labelbottom=False, length=5)
+    axs[0].set_xticks(np.linspace(0, t_max, 6))
+    axs[0].set_ylim([lim * 3 for lim in [-1.25, 1.25]])
+    axs[0].set_yticks(np.linspace(-3, 3, 3))
+    axs[0].text(tx, ty, r"${\rm (a)}$",
+                horizontalalignment=ha,
+                verticalalignment=va,
+                transform=axs[0].transAxes,
+                fontsize=12)
+
+    # Add colorbar to the side without affecting panel width
+    cbar = fig.colorbar(pcm, ax=axs[0], pad=0.01, aspect=10, orientation='vertical')
+    cbar.set_label(r'$|\psi|^2-|\psi_0|^2$')
+    cbar.set_ticks(np.round(np.linspace(vmin, vmax, 5), 2))
+
+    # Bottom Panel
+    axs[1].plot(time, energy)
+    axs[1].set_xlabel(r'$t/\tau$')
+    axs[1].set_ylabel(r'$\delta E$')
+    axs[1].tick_params(labelbottom=True, length=5)
+    axs[1].set_xticks(np.linspace(0, t_max, 6))
+    axs[1].text(tx,ty, r"${\rm (b)}$",
+                horizontalalignment=ha,
+                verticalalignment=va,
+                transform=axs[1].transAxes,
+                fontsize=12)
+        
+    # Adjust vertical spacing
+    fig.get_layout_engine().set(w_pad=0, h_pad=0, hspace=0, wspace=0)
+
+    plt.show()
+
+    # Ensure figs directory exists
+    if not os.path.exists(pm.figs_dir):
+        os.makedirs(pm.figs_dir)
+    # Save the figure
+    fig.savefig(fig_path, format='png', bbox_inches='tight', transparent=True)
+

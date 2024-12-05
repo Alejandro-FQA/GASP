@@ -4,6 +4,9 @@ with 2 hidden neurons, epsilon=(1+i)*1e-3 and RK$ dt=0.01,
 imaginary parameters go to 0 and only 3 reals are needed to 
 describe the ground state.
 
+Increasing the number of neurons per layer
+highly reduces the energy problem.
+
 
 
 
