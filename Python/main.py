@@ -52,7 +52,7 @@ match pm.architecture:
         # Network architecture
         input_size = 1
         output_size = 1
-        hidden_layers = [2]
+        hidden_layers = [2,2,4]
         net_ark = "-".join(map(str, [input_size, *hidden_layers, output_size]))        
         # Create Neural Quantum State
         model = NQS(input_size, output_size, hidden_layers).to(device)
@@ -114,6 +114,8 @@ pm.t_max = 50
 # Integrator parameters
 pm.evolution = 'real'
 
+pm.lambda_reg = 1e-3 * (1 + 1j)
+
 # Perform real time evolution
 file_path = utils.file_ID(pm.data_dir,
                           file_name(pm.architecture, net_ark, pm.evolution),
@@ -154,8 +156,7 @@ target_energy = 0.5 * (1 + p**2 + x**2)
 den_diff = den.T - target_den
 energy_diff = real_evo.energy - target_energy
 
-fig_path = fig_path[:-4] + "_compare.png"
-plots.evo_fig_compare(real_evo.t_grid, mesh, den_diff, energy_diff, fig_path=fig_path)
-
+fig_path_0 = fig_path[:-4] + "_compare.png"
+plots.evo_fig_compare(real_evo.t_grid, mesh, den_diff, energy_diff, fig_path=fig_path_0)
 
 # %%

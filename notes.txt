@@ -7,6 +7,24 @@ describe the ground state.
 Increasing the number of neurons per layer
 highly reduces the energy problem.
 
+Increasing the number of layers seems to increase
+the overall time by one minute per layer.
 
+NaN encountered during imaginary time propagation
+when using `lambda_reg = 1e-5 * (1 + 1j)`,
+but `dt = 0.01` circumvents the problem.
+The error does not seem to appear during real time propagation
+with `dt = 0.1`.
+NaN not detected.
 
+During imaginary time propagation `lambda_reg` seems to work better
+without imaginary part.
+This also seems to ensure that the parameters are all real.
+During real time propagation, complex `lambda_reg` seems to work better.
+
+Two layers work better than a single layer
+given the same amount of parameters.
+
+Each extra layer seems to increase computation time by 50%
+with respect to single layer computations.
 

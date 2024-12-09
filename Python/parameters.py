@@ -15,7 +15,7 @@ progress_bar = True
 
 # Convergence parameters
 stopper = True
-e_error = 1e-8
+e_error = 1e-3
 steps = 10
 
 # PArameteres to save data
@@ -26,7 +26,7 @@ overwrite = False
 version = 1
 
 # Regularization parameters
-lambda_reg = 1e-3 * (1 + 1j)
+lambda_reg = 1e-3 * (1 + 1j*0)
 reg = 'diagonal_shift'
 
 # Gaussian barrier
