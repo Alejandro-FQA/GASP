@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 from matplotlib.colors import TwoSlopeNorm
+from matplotlib.ticker import ScalarFormatter
 
 import numpy as np
 import os
@@ -138,8 +139,8 @@ def evo_fig_compare(time, mesh, den, energy, fig_path='compare.png'):
 
     # Create a diverging colormap centered at zero
     cmap = 'seismic'
-    vmin = np.round(np.min(den),2)
-    vmax = np.round(np.max(den),2)
+    vmin = np.min(den)
+    vmax = np.max(den)
     norm = TwoSlopeNorm(vmin = vmin, vcenter=0, vmax=vmax)
 
     # Top Panel
@@ -158,7 +159,12 @@ def evo_fig_compare(time, mesh, den, energy, fig_path='compare.png'):
     # Add colorbar to the side without affecting panel width
     cbar = fig.colorbar(pcm, ax=axs[0], pad=0.01, aspect=10, orientation='vertical')
     cbar.set_label(r'$|\psi|^2-|\psi_0|^2$')
-    cbar.set_ticks(np.round(np.linspace(vmin, vmax, 5), 2))
+    # cbar.set_ticks(np.round(np.linspace(vmin, vmax, 5), 2))
+    # Set colorbar ticks to scientific notation
+    formatter = ScalarFormatter(useMathText=True)
+    formatter.set_scientific(True)
+    formatter.set_powerlimits((-3, 3))
+    cbar.ax.yaxis.set_major_formatter(formatter)
 
     # Bottom Panel
     axs[1].plot(time, energy)
