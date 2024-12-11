@@ -15,7 +15,7 @@ progress_bar = True
 
 # Convergence parameters
 stopper = True
-e_error = 1e-3
+e_error = 1e-4
 steps = 10
 
 # PArameteres to save data
