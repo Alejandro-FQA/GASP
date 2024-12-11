@@ -150,6 +150,7 @@ class Dynamics:
         self.model = load_model_architecture(file_path)
 
         # Grids
+        # TODO: implement solution if no t_grid found or x_grid given
         self.t_grid = load_variable("t_grid", file_path) 
         self.x_grid = x_grid
 
