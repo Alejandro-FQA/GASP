@@ -15,14 +15,15 @@ progress_bar = True
 
 # Convergence parameters
 stopper = True
-e_error = 1e-3
+e_error = 1e-4
 steps = 10
 
-# PArameteres to save data
+# Parameteres to save data
 data_dir = "./data/"
 figs_dir = "./figs/"
+fig_format = "pdf"
 file_path = "model_states.h5"
-overwrite = False
+overwrite = True
 version = 1
 
 # Regularization parameters

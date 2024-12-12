@@ -2,8 +2,11 @@
 import torch
 from torch.autograd import grad
 
+# Other imports
+from tqdm import tqdm
 import numpy as np
 import os
+import matplotlib.pyplot as plt
 
 # Custom imports
 import parameters as pm
@@ -22,7 +25,7 @@ def file_ID(directory, file_name, format):
         file_path (str): Path to file.
     """
     # TODO: fails when original file has been deleted
-    file_path = directory + file_name + format
+    file_path = directory + file_name + '.' + format
     v_id = pm.version
     msg = False
     # Check if original file exists
@@ -284,3 +287,80 @@ class PointGrid:
             'points': self.points
         }
 
+def fitting(model, mesh, target_fn, fig_path, visibility=True):
+    """
+    Train the model NQS to fit a given function.
+
+    Args:
+        model (torch.nn.Module): The model whose parameters evolve in time.
+        mesh (torch.Tensor): The spatial grid (inputs) for the model.
+        target_fn (torch.lambda_Function): The function to fit to.
+    """
+    def loss_fn(psi, target):
+        # Complex Mean Squared Error (CMSE)
+        real_loss = torch.mean((psi.real - target.real)**2)
+        imag_loss = torch.mean((psi.imag - target.imag)**2)
+        return real_loss + imag_loss
+
+    # Optimizer potions
+    learning_rate = 1e-3
+    optimizer = torch.optim.Adam(params=model.parameters(), lr=learning_rate)
+
+    # Create x_target as a leaf tensor
+    x_target = torch.tensor(mesh, dtype=torch.complex128, requires_grad=False).clone().unsqueeze(1)
+    target = target_fn(x_target)
+    # scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=1e3, gamma=0.5)  # Reduce LR by 50% every 100 steps
+
+    # Training
+    loss_lst = []
+    epochs = 10000
+    with tqdm(total=epochs, disable=not pm.progress_bar) as pbar:
+        for i in range(epochs):   
+            # wavefunction
+            psi = model(x_target)
+            # Compute the loss
+            loss = loss_fn(psi, target) 
+            # Perform backpropagation and optimization
+            optimizer.zero_grad()   # Initialize gradients to zero at each epoch
+            loss.backward(retain_graph=False)         # Compute gradients
+            optimizer.step()        # Update parameters
+            
+            # scheduler.step()  # Adjust learning rate
+
+            # Optionally: print the loss for debugging
+            pbar.set_postfix_str(f"Loss: {loss.item():.2e}")
+            pbar.update(1)  
+
+            loss_lst.append(loss.detach().numpy())
+
+    if visibility:
+        #%% Visualization
+        fig = plt.figure()  # Create the main figure
+
+        # Primary Y-Axis: Target and Model
+        ax = fig.add_subplot(111, facecolor="none")
+        ax.plot(mesh, np.abs(target.detach().numpy())**2, label='Target') 
+        ax.plot(mesh, np.abs(model(x_target).detach().numpy())**2, label='Model')
+        ax.set_xlabel('Mesh (Primary X-Axis)')  # Primary x-axis label
+        ax.set_ylabel('Amplitude Squared')  # Primary y-axis label
+        ax.legend(loc='upper right')
+
+        # Add Loss plot to the primary axis (optional)
+        ax2 = fig.add_subplot(111, facecolor="none")  # Secondary y-axis for loss
+        ax2.plot(range(epochs), loss_lst, label='Loss', color='red', linestyle='dashed')
+        ax2.set_yscale('log')
+        ax2.xaxis.tick_top()
+        ax2.xaxis.set_label_position('top')
+        ax2.set_xlabel('Epochs (Secondary X-Axis)')  # Label for the top x-axis
+        ax2.yaxis.tick_right()
+        ax2.yaxis.set_label_position("right")
+        ax2.set_ylabel('Loss')  # Secondary y-axis label
+        ax2.legend(loc='right')
+
+        plt.show()
+
+        # Ensure figs directory exists
+        if not os.path.exists(pm.figs_dir):
+            os.makedirs(pm.figs_dir)
+        # Save the figure
+        fig.savefig(fig_path, format=pm.fig_format, bbox_inches='tight', transparent=False)

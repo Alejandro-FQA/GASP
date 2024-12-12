@@ -5,7 +5,6 @@ import torch
 
 # impor numeric libraries
 import numpy as np
-import matplotlib.pyplot as plt
 
 # import Custom Modules
 import parameters as pm
@@ -52,7 +51,7 @@ match pm.architecture:
         # Network architecture
         input_size = 1
         output_size = 1
-        hidden_layers = [2,2,4]
+        hidden_layers = [16,16,16]
         net_ark = "-".join(map(str, [input_size, *hidden_layers, output_size]))        
         # Create Neural Quantum State
         model = NQS(input_size, output_size, hidden_layers).to(device)
@@ -71,9 +70,18 @@ mesh = grid.get_points().to(device)
 # torch.requires_grad_() tells autograd to record operations on this tensor
 x_grid = mesh.clone().unsqueeze(1).requires_grad_().type(torch.complex128)
 
+#%% Fitting routine
+fig_path = utils.file_ID(pm.figs_dir,
+                          file_name(pm.architecture, net_ark, 'fitting'),
+                          pm.fig_format)
+# Target function
+target = lambda x: (1/np.pi)**(1/4) * np.exp(-0.5 * (x)**2)
+# Fitting
+utils.fitting(model, mesh, target, fig_path, visibility=True)
+
 #%% Stochastic Reconfiguration
 # Initial conditions
-pm.x0 = 1
+pm.x0 = 0
 pm.w = 1
 
 # Time parameters
@@ -99,12 +107,12 @@ params = imag_evo.get_params()
 # Plot data
 fig_path = utils.file_ID(pm.figs_dir,
                          file_name(pm.architecture, net_ark, pm.evolution),
-                         ".png")
+                         pm.fig_format)
 plots.evo_fig_params(imag_evo.t_grid, mesh, den.T, params, fig_path=fig_path)
 
 #%% Stochastic Reconfiguration
 # Initial conditions
-pm.x0 = 0
+pm.x0 = 1
 pm.w = 1
 
 # Time parameters
@@ -132,10 +140,11 @@ params = real_evo.get_params()
 # Plot data
 fig_path = utils.file_ID(pm.figs_dir,
                          file_name(pm.architecture, net_ark, pm.evolution),
-                         ".png")
+                         pm.fig_format)
 plots.evo_fig_params(real_evo.t_grid, mesh, den.T, params, fig_path=fig_path)
 
 # %% Compare with analytic results
+
 # Analytic data
 x0 = 1
 p0 = 0
@@ -156,7 +165,7 @@ target_energy = 0.5 * (1 + p**2 + x**2)
 den_diff = den.T - target_den
 energy_diff = real_evo.energy - target_energy
 
-fig_path_0 = fig_path[:-4] + "_compare.png"
+fig_path_0 = fig_path + "_compare." + pm.fig_format
 plots.evo_fig_compare(real_evo.t_grid, mesh, den_diff, energy_diff, fig_path=fig_path_0)
 
 # %%
