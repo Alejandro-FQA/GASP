@@ -165,7 +165,7 @@ def evo_fig_params(time, mesh, den, params, fig_path='output.pdf'):
     cbar_0.set_ticks(np.round(np.linspace(0,max(map(max, den)),4),2))
 
     # Create a diverging colormap centered at zero
-    cmap = 'coolwarm'
+    cmap = 'RdBu' #'coolwarm'
     vabs = np.max([np.max(np.abs(real_params)), np.max(np.abs(imag_params))])
     norm = TwoSlopeNorm(vmin=-vabs, vcenter=0, vmax=vabs)
 
@@ -217,7 +217,7 @@ def evo_fig_params(time, mesh, den, params, fig_path='output.pdf'):
     if not os.path.exists(pm.figs_dir):
         os.makedirs(pm.figs_dir)
     # Save the figure
-    fig.savefig(fig_path, format='png', bbox_inches='tight', transparent=False)
+    fig.savefig(fig_path, format=pm.fig_format, bbox_inches='tight', transparent=False)
 
 def evo_fig_compare(time, mesh, den, energy, fig_path='compare.png'):
     
@@ -233,10 +233,9 @@ def evo_fig_compare(time, mesh, den, energy, fig_path='compare.png'):
     fig, axs = plt.subplots(2,1, figsize=(4, 3), sharex=True, layout='constrained')
 
     # Create a diverging colormap centered at zero
-    cmap = 'coolwarm'
-    vmin = np.min(den)
-    vmax = np.max(den)
-    norm = TwoSlopeNorm(vmin = vmin, vcenter=0, vmax=vmax)
+    cmap = 'RdBu' #'coolwarm'
+    vabs = np.max(np.abs(den))
+    norm = TwoSlopeNorm(vmin=-vabs, vcenter=0, vmax=vabs)
 
     # Top Panel
     pcm = axs[0].pcolor(time, mesh, den, cmap=cmap, norm=norm, shading='auto')
@@ -255,7 +254,7 @@ def evo_fig_compare(time, mesh, den, energy, fig_path='compare.png'):
     cbar = fig.colorbar(pcm, ax=axs[0], pad=0.01, aspect=10, orientation='vertical')
     cbar.set_label(r'$|\psi|^2-|\psi_0|^2$')
     # cbar.set_ticks(np.round(np.linspace(vmin, vmax, 5), 2))
-    cbar.set_ticks(np.linspace(vmin, vmax, 5))
+    cbar.set_ticks(np.linspace(-vabs, vabs, 5))
     # Set colorbar ticks to scientific notation
     # formatter = ScalarFormatter(useMathText=True)
     # formatter.set_scientific(True)
@@ -268,7 +267,7 @@ def evo_fig_compare(time, mesh, den, energy, fig_path='compare.png'):
     axs[1].set_xlabel(r'$t/\tau$')
     axs[1].set_ylabel(r'$\delta E$')
     axs[1].tick_params(labelbottom=True, length=5)
-    axs[1].set_xticks(np.linspace(0, t_max, 6))
+    axs[1].set_xticks(np.round(np.linspace(0, t_max, 6), 1))
     axs[1].text(tx,ty, r"${\rm (b)}$",
                 horizontalalignment=ha,
                 verticalalignment=va,
@@ -284,5 +283,5 @@ def evo_fig_compare(time, mesh, den, energy, fig_path='compare.png'):
     if not os.path.exists(pm.figs_dir):
         os.makedirs(pm.figs_dir)
     # Save the figure
-    fig.savefig(fig_path, format='png', bbox_inches='tight', transparent=True)
+    fig.savefig(fig_path, format=pm.fig_format, bbox_inches='tight', transparent=False)
 

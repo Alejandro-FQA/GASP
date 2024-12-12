@@ -31,3 +31,5 @@ with respect to single layer computations.
 There seems to be not much performance improvement for the HO.
 However, the intial condition surely helps for the first steps.
 
+Fitting saves a figure but not the data (yet).
+
