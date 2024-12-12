@@ -125,8 +125,8 @@ def integrator(model, x_grid, t_grid=None, file_path=pm.file_path):
             try:
                 # Check for NaN
                 if torch.isnan(model(x_grid)).any():
-                    raise ValueError(f"NaN encountered in wavefunction at time step {it}." +\
-                                    " Check parameters: dt, lambda_reg, reg.")   
+                    raise ValueError(f"NaN encountered in wavefunction at time step {it}. " +\
+                                      "Check parameters: dt, lambda_reg, reg.")   
                 else:
                     # Save the model state at this time step in HDF5
                     analysis.save_model_states(model, time_step=it, file_path=file_path)
@@ -139,7 +139,7 @@ def integrator(model, x_grid, t_grid=None, file_path=pm.file_path):
                             check_point += 1
                             if check_point == pm.steps // t_step + 1:
                                 t_grid = t_grid[:it+1]
-                                print('Convergence reached')
+                                print('Convergence reached')                                
                                 break
                         else:
                             e0 = energy
@@ -153,6 +153,7 @@ def integrator(model, x_grid, t_grid=None, file_path=pm.file_path):
                 break
 
         analysis.save_variable(t_grid, "t_grid", file_path)
+        analysis.save_variable(pbar.format_dict['elapsed'], 'cmp_time', file_path)
 # -----------------------------------------------------------------
 def RK4(u, model, grid):
 

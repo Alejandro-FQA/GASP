@@ -169,3 +169,16 @@ fig_path_0 = fig_path + "_compare." + pm.fig_format
 plots.evo_fig_compare(real_evo.t_grid, mesh, den_diff, energy_diff, fig_path=fig_path_0)
 
 # %%
+from tqdm import tqdm
+import time
+    
+# for i in tqdm(iterable):
+with tqdm(range(10)) as t:
+    for i in t:
+        time.sleep(0.5)
+        elapsed = t.format_dict['elapsed']
+        elapsed_str = t.format_interval(elapsed)
+        
+print(elapsed)
+print(elapsed_str)
+# %%
