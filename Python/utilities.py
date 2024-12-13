@@ -6,6 +6,7 @@ from torch.autograd import grad
 from tqdm import tqdm
 import numpy as np
 import os
+import sys
 import matplotlib.pyplot as plt
 
 # Custom imports
@@ -30,12 +31,12 @@ def file_ID(directory, file_name, format):
     msg = False
     # Check if original file exists
     if os.path.exists(file_path) and not pm.overwrite:
-        file_path = directory + file_name + f"_v{v_id}" +  format
+        file_path = directory + file_name + f"_v{v_id}." +  format
         msg = True
     # Check if version files exist
     while os.path.exists(file_path) and not pm.overwrite:
         v_id += 1
-        file_path = directory + file_name + f"_v{v_id}" +  format
+        file_path = directory + file_name + f"_v{v_id}." +  format
         msg = True
 
     pm.version = v_id
@@ -309,6 +310,7 @@ def fitting(model, mesh, target_fn, fig_path, visibility=True):
     # Create x_target as a leaf tensor
     x_target = torch.tensor(mesh, dtype=torch.complex128, requires_grad=False).clone().unsqueeze(1)
     target = target_fn(x_target)
+
     # scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=1e3, gamma=0.5)  # Reduce LR by 50% every 100 steps
 
     # Training

@@ -39,10 +39,10 @@ def EOM(parameters, model, grid):
     '''
     Equations of motion
     '''        
-    # Compute wave funtion
+    # Compute wavefuntion
     psi = model(grid) 
 
-    # TODO: check if normalization improves and is worth the time
+    # Normalize wavefunction
     # norm = torch.vdot(psi[:,0], psi[:,0]).detach()
     # psi = psi / torch.sqrt(norm)
 

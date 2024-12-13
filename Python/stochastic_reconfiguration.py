@@ -37,7 +37,11 @@ def hamiltonian(psi, grid):
     # Gaussian barrier
     gaussian = pm.gauss_amplitude * torch.exp(-(grid - pm.gauss_x0) ** 2 / 2 * pm.gauss_width ** 2) * psi
 
-    return kinetic + potential + gaussian
+    # Mean-field
+    mean_field = pm.g * torch.abs(psi).pow(2) * psi
+    chem_pot = pm.mu * psi
+
+    return kinetic + potential + gaussian + mean_field + chem_pot
 
 # -----------------------------------------------------------------
 # Function to compute the Jacobian of Ψ(x) wrt parameters

@@ -11,7 +11,7 @@ import parameters as pm
 import utilities as utils
 import plots
 # import Customs Classes
-from models import Gaussian, NQS
+from models import Gaussian, NQS, Soliton
 from analysis import Dynamics
 # improt Custom Functions
 from integrators import integrator
@@ -47,11 +47,27 @@ match pm.architecture:
         # Update model parameteres
         model.update_params(new_params)
 
+    case 'SASP':
+        # Create the NN model
+        num_params = 4 # only 4 parameters
+        net_ark = f"{num_params}"
+        model = Soliton(num_params).to(device) 
+
+        # Define Parameters
+        new_params = torch.view_as_complex(torch.randn(num_params,2))
+        # ground state values provided
+        new_params[0] = 1 + 0 * 1j
+        new_params[1] = 1 + 0 * 1j
+        new_params[2] = 0 + 0 * 1j
+
+        # Update model parameteres
+        model.update_params(new_params)
+
     case 'NQS':
         # Network architecture
         input_size = 1
         output_size = 1
-        hidden_layers = [16,16,16]
+        hidden_layers = [16,16]
         net_ark = "-".join(map(str, [input_size, *hidden_layers, output_size]))        
         # Create Neural Quantum State
         model = NQS(input_size, output_size, hidden_layers).to(device)
@@ -75,18 +91,23 @@ fig_path = utils.file_ID(pm.figs_dir,
                           file_name(pm.architecture, net_ark, 'fitting'),
                           pm.fig_format)
 # Target function
-target = lambda x: (1/np.pi)**(1/4) * np.exp(-0.5 * (x)**2)
+# target = lambda x: (1/np.pi)**(1/4) * np.exp(-0.5 * (x - 1)**2)   # Gaussian
+target = lambda x: 1 / torch.cosh((x - 0)) * torch.exp(-1j * 0.0 * x)            # Bright soliton
 # Fitting
 utils.fitting(model, mesh, target, fig_path, visibility=True)
 
 #%% Stochastic Reconfiguration
 # Initial conditions
-pm.x0 = 0
-pm.w = 1
+# trap
+pm.x0 = 1
+pm.w = 0.
+# mean-field
+pm.g = -1
+pm.mu = 1
 
 # Time parameters
 pm.dt = 0.1
-pm.t_max = 50
+pm.t_max = 10
 
 # Integrator parameters
 pm.evolution = 'imag'
@@ -112,8 +133,8 @@ plots.evo_fig_params(imag_evo.t_grid, mesh, den.T, params, fig_path=fig_path)
 
 #%% Stochastic Reconfiguration
 # Initial conditions
-pm.x0 = 1
-pm.w = 1
+pm.x0 = 0
+pm.w = 0.
 
 # Time parameters
 pm.dt = 0.1
@@ -168,17 +189,4 @@ energy_diff = real_evo.energy - target_energy
 fig_path_0 = fig_path + "_compare." + pm.fig_format
 plots.evo_fig_compare(real_evo.t_grid, mesh, den_diff, energy_diff, fig_path=fig_path_0)
 
-# %%
-from tqdm import tqdm
-import time
-    
-# for i in tqdm(iterable):
-with tqdm(range(10)) as t:
-    for i in t:
-        time.sleep(0.5)
-        elapsed = t.format_dict['elapsed']
-        elapsed_str = t.format_interval(elapsed)
-        
-print(elapsed)
-print(elapsed_str)
 # %%

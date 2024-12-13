@@ -23,7 +23,7 @@ data_dir = "./data/"
 figs_dir = "./figs/"
 fig_format = "pdf"
 file_path = "model_states.h5"
-overwrite = True
+overwrite = False
 version = 1
 
 # Regularization parameters
@@ -34,3 +34,7 @@ reg = 'diagonal_shift'
 gauss_width = 0
 gauss_amplitude = 0
 gauss_x0 = 0
+
+# Mean field
+g = -1
+mu = 1

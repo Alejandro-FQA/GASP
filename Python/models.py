@@ -5,7 +5,6 @@ import numpy as np
 class Gaussian(nn.Module):
     '''
     Create a parametric Gaussian
-
     '''
     def __init__(self, num_params):
         super(Gaussian, self).__init__()
@@ -34,6 +33,33 @@ class Gaussian(nn.Module):
                               * torch.exp(1j * p0 * x) \
                               * torch.exp(-0.5j * x0 * p0)
         
+class Soliton(nn.Module):
+    '''
+    Create a parametric Soliton
+    '''
+    def __init__(self, num_params):
+        super(Soliton, self).__init__()
+        # Initialize the parameters
+        if num_params == 4:
+            self.num_params = num_params
+        else:
+            self.num_params = 4
+            print('num_params set to 4')
+        self.params = nn.Parameter(torch.view_as_complex(torch.randn(self.num_params,2)))
+
+    def update_params(self, new_params):
+        # Optionally add a method to update the parameters manually
+        with torch.no_grad():  # Make sure it doesn't interfere with autograd
+            self.params.copy_(new_params)
+
+    def forward(self, x):
+        x0 = self.params[0]
+        eta = self.params[1]
+        xi = self.params[2]
+        phi = self.params[3]
+        
+        return eta / torch.cosh(eta * (x - x0)) * torch.exp(-1j * xi * x) * torch.exp(1j * phi)
+
 
 class NQS(nn.Module):
     '''

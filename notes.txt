@@ -33,3 +33,4 @@ However, the intial condition surely helps for the first steps.
 
 Fitting saves a figure but not the data (yet).
 
+There is a minimum amount of parameters needed to get MF reesults.
