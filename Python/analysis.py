@@ -114,7 +114,8 @@ def load_variable(name, file_path):
     with h5py.File(file_path, 'r') as f:
         if name not in f:
             raise KeyError(f"'{name}' not found in {file_path}")        
-        variable = f[name][:]
+        variable = f[name][()]
+        # variable = f[name][:]  -- old does not work for scalars
     return variable
 
 # -----------------------------------------------------------------

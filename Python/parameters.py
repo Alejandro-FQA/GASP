@@ -15,19 +15,20 @@ progress_bar = True
 
 # Convergence parameters
 stopper = True
-e_error = 1e-4
+e_error = 1e-7
 steps = 10
 
 # Parameteres to save data
 data_dir = "./data/"
+data_format = "h5"
 figs_dir = "./figs/"
 fig_format = "pdf"
 file_path = "model_states.h5"
-overwrite = False
+overwrite = True
 version = 1
 
 # Regularization parameters
-lambda_reg = 1e-3 * (1 + 1j*0)
+lambda_reg = 1e-3 * (1 + 1j)
 reg = 'diagonal_shift'
 
 # Gaussian barrier
@@ -36,5 +37,5 @@ gauss_amplitude = 0
 gauss_x0 = 0
 
 # Mean field
-g = -1
-mu = 1
+g = 0
+mu = 0

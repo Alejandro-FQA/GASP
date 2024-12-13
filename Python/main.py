@@ -67,12 +67,11 @@ match pm.architecture:
         # Network architecture
         input_size = 1
         output_size = 1
-        hidden_layers = [16,16]
+        hidden_layers = [2,1]
         net_ark = "-".join(map(str, [input_size, *hidden_layers, output_size]))        
         # Create Neural Quantum State
         model = NQS(input_size, output_size, hidden_layers).to(device)
         
-
 # Model ID
 file_name = lambda *args: "_".join(args)
 
@@ -91,23 +90,21 @@ fig_path = utils.file_ID(pm.figs_dir,
                           file_name(pm.architecture, net_ark, 'fitting'),
                           pm.fig_format)
 # Target function
-# target = lambda x: (1/np.pi)**(1/4) * np.exp(-0.5 * (x - 1)**2)   # Gaussian
-target = lambda x: 1 / torch.cosh((x - 0)) * torch.exp(-1j * 0.0 * x)            # Bright soliton
+n = 0 # quantum number
+target = lambda x: utils.QHO(n, x) # HO wavefunction
+# target = lambda x: 1 / torch.cosh((x - 0)) * torch.exp(-1j * 0.0 * x)            # Bright soliton
 # Fitting
 utils.fitting(model, mesh, target, fig_path, visibility=True)
 
 #%% Stochastic Reconfiguration
 # Initial conditions
 # trap
-pm.x0 = 1
-pm.w = 0.
-# mean-field
-pm.g = -1
-pm.mu = 1
+pm.x0 = 0
+pm.w = 1
 
 # Time parameters
 pm.dt = 0.1
-pm.t_max = 10
+pm.t_max = 50
 
 # Integrator parameters
 pm.evolution = 'imag'
@@ -115,7 +112,7 @@ pm.evolution = 'imag'
 # Perform imag time evolution
 file_path = utils.file_ID(pm.data_dir,
                           file_name(pm.architecture, net_ark, pm.evolution),
-                          ".h5")
+                          pm.data_format)
 integrator(model, x_grid, file_path=file_path)
 
 # Get the dynamics
@@ -134,7 +131,7 @@ plots.evo_fig_params(imag_evo.t_grid, mesh, den.T, params, fig_path=fig_path)
 #%% Stochastic Reconfiguration
 # Initial conditions
 pm.x0 = 0
-pm.w = 0.
+pm.w = 1
 
 # Time parameters
 pm.dt = 0.1
@@ -148,7 +145,7 @@ pm.lambda_reg = 1e-3 * (1 + 1j)
 # Perform real time evolution
 file_path = utils.file_ID(pm.data_dir,
                           file_name(pm.architecture, net_ark, pm.evolution),
-                          ".h5")
+                          pm.data_format)
 integrator(model, x_grid, file_path=file_path)
 
 # Get the dynamics
@@ -186,7 +183,7 @@ target_energy = 0.5 * (1 + p**2 + x**2)
 den_diff = den.T - target_den
 energy_diff = real_evo.energy - target_energy
 
-fig_path_0 = fig_path + "_compare." + pm.fig_format
+fig_path_0 = fig_path[:-4] + "_compare." + pm.fig_format
 plots.evo_fig_compare(real_evo.t_grid, mesh, den_diff, energy_diff, fig_path=fig_path_0)
 
 # %%

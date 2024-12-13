@@ -43,6 +43,40 @@ def file_ID(directory, file_name, format):
     if msg: print(f"This file version is v{v_id}")
     return file_path
 
+
+def hermite(n, x):
+    """
+    Function to compute Hermite polynomials using recursion
+
+    Args:
+        n (int): Quantum number.                    
+        x (torch.Tensor): Spatial grid points.
+
+    Returns:
+          (torch.Tensor): Hermite polynomial H_n(x)
+    """
+    if n == 0:
+        return torch.ones_like(x)
+    elif n == 1:
+        return 2 * x
+    else:
+        return 2 * x * hermite(n - 1, x) - 2 * (n - 1) * hermite(n - 2, x)
+
+def QHO(n, x):
+    """
+    Quantum Harmonic Oscillator n-th bound state
+
+    Args:
+        n (int): Quantum number.                    
+        x (torch.Tensor): Spatial grid points.
+
+    Returns:
+          (torch.Tensor): n-th bound state wavefunction
+    """
+    factorial = lambda n: torch.exp(torch.lgamma(torch.tensor(n + 1)))
+    coeff = 1.0 / torch.sqrt(2**n * factorial(n) * torch.sqrt(torch.tensor(torch.pi)))
+    return coeff * torch.exp(-0.5 * (x)**2) * hermite(n, x)
+
 def is_hermitian(A):
     return torch.allclose(A, A.conj().T)
 
