@@ -28,7 +28,7 @@ overwrite = True
 version = 1
 
 # Regularization parameters
-lambda_reg = 1e-3 * (1 + 1j)
+lambda_reg = 1e-3 * (1 + 1j * 0)
 reg = 'diagonal_shift'
 
 # Gaussian barrier

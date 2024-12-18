@@ -163,6 +163,9 @@ class NQS(nn.Module):
     def forward(self, x):
         # Define the forward pass using the sequential container
         return self.network(x)
+    
+    def num_parameteres(self):
+        return sum(p.numel() for p in self.parameters())
 
 class StableSigmoid(nn.Module):
     def forward(self, input):  

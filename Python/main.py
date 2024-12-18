@@ -67,7 +67,7 @@ match pm.architecture:
         # Network architecture
         input_size = 1
         output_size = 1
-        hidden_layers = [2,1]
+        hidden_layers = [4,8,4]
         net_ark = "-".join(map(str, [input_size, *hidden_layers, output_size]))        
         # Create Neural Quantum State
         model = NQS(input_size, output_size, hidden_layers).to(device)
@@ -91,7 +91,7 @@ fig_path = utils.file_ID(pm.figs_dir,
                           pm.fig_format)
 # Target function
 n = 0 # quantum number
-target = lambda x: utils.QHO(n, x) # HO wavefunction
+target = lambda x: utils.QHO(n, x - 1) # HO wavefunction
 # target = lambda x: 1 / torch.cosh((x - 0)) * torch.exp(-1j * 0.0 * x)            # Bright soliton
 # Fitting
 utils.fitting(model, mesh, target, fig_path, visibility=True)
@@ -99,7 +99,7 @@ utils.fitting(model, mesh, target, fig_path, visibility=True)
 #%% Stochastic Reconfiguration
 # Initial conditions
 # trap
-pm.x0 = 0
+pm.x0 = 1
 pm.w = 1
 
 # Time parameters
@@ -184,6 +184,6 @@ den_diff = den.T - target_den
 energy_diff = real_evo.energy - target_energy
 
 fig_path_0 = fig_path[:-4] + "_compare." + pm.fig_format
-plots.evo_fig_compare(real_evo.t_grid, mesh, den_diff, energy_diff, fig_path=fig_path_0)
+plots.evo_fig_compare(real_evo.t_grid[:-10], mesh, den_diff[:,:-10], energy_diff[:-10], fig_path=fig_path_0)
 
 # %%

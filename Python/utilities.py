@@ -349,7 +349,7 @@ def fitting(model, mesh, target_fn, fig_path, visibility=True):
 
     # Training
     loss_lst = []
-    epochs = 10000
+    epochs = 5000
     with tqdm(total=epochs, disable=not pm.progress_bar) as pbar:
         for i in range(epochs):   
             # wavefunction
