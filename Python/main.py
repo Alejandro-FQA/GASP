@@ -91,8 +91,8 @@ fig_path = utils.file_ID(pm.figs_dir,
                           pm.fig_format)
 # Target function
 n = 0 # quantum number
-target = lambda x: utils.QHO(n, x - 1) # HO wavefunction
-# target = lambda x: 1 / torch.cosh((x - 0)) * torch.exp(-1j * 0.0 * x)            # Bright soliton
+target = lambda x: utils.QHO(n, x-1) # HO wavefunction
+# target = lambda x: 1 / torch.cosh((x - 0)) * torch.exp(-1j * 0.0 * x) # Bright soliton
 # Fitting
 utils.fitting(model, mesh, target, fig_path, visibility=True)
 
