@@ -48,6 +48,7 @@ def EOM(parameters, model, grid):
 
     # Compute the Jacobian
     jacobian = SR.compute_wirtinger_jacobian(model, psi)
+
     # Conpute the variational forces
     F = SR.compute_variational_forces(psi, jacobian, grid)
     # Compute the QGT

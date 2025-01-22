@@ -342,9 +342,10 @@ def fitting(model, mesh, target_fn, fig_path, visibility=True):
     optimizer = torch.optim.Adam(params=model.parameters(), lr=learning_rate)
 
     # Create x_target as a leaf tensor
-    x_target = torch.tensor(mesh, dtype=torch.complex128, requires_grad=False).clone().unsqueeze(1)
+    x_target = mesh.clone().unsqueeze(1).requires_grad_(False).type(torch.complex128)
+    # x_target = torch.tensor(mesh, dtype=torch.complex128, requires_grad=False).clone().unsqueeze(1)
     target = target_fn(x_target)
-
+    
     # scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=1e3, gamma=0.5)  # Reduce LR by 50% every 100 steps
 
     # Training
@@ -384,7 +385,8 @@ def fitting(model, mesh, target_fn, fig_path, visibility=True):
         # Add Loss plot to the primary axis (optional)
         ax2 = fig.add_subplot(111, facecolor="none")  # Secondary y-axis for loss
         ax2.plot(range(epochs), loss_lst, label='Loss', color='red', linestyle='dashed')
-        ax2.set_yscale('log')
+        if np.sum(loss_lst) != 0:
+            ax2.set_yscale('log')
         ax2.xaxis.tick_top()
         ax2.xaxis.set_label_position('top')
         ax2.set_xlabel('Epochs (Secondary X-Axis)')  # Label for the top x-axis

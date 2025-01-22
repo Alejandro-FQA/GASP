@@ -3,6 +3,7 @@
 # PyTorch imports
 import torch
 from torch.autograd import grad
+from torch.func import vmap
 
 # Custom imports
 import utilities as utils
@@ -45,13 +46,13 @@ def hamiltonian(psi, grid):
 
 # -----------------------------------------------------------------
 # Function to compute the Jacobian of Ψ(x) wrt parameters
-def compute_wirtinger_jacobian(model, outputs):
+def old_compute_wirtinger_jacobian(model, outputs):
     '''
     Computes the Jacobian of the outputs of the model wrt the parameters of the model
     
     Arguments:
         model   (model): 
-        inputs  (tensor): grid to feed the model
+        outputs (tensor): grid to feed the model
 
     Return:
         jacobian    (tensor): contains the derivatives of the outputs wrt the parameters of the model
@@ -68,11 +69,11 @@ def compute_wirtinger_jacobian(model, outputs):
                                 grad(
                                     outputs=u,
                                     inputs=model.parameters(),
-                                    grad_outputs=grad_outputs.unsqueeze(1).type(torch.complex128),
+                                    grad_outputs=grad_outputs.unsqueeze(1),
                                     # retain_graph=True,
                                     create_graph=True
                                 )
-                            ) for grad_outputs in torch.eye(u.shape[0]).unbind()]
+                            ) for grad_outputs in torch.eye(u.shape[0]).type(torch.complex128).unbind()]
                         )
                      ).unbind(-1)
     (dv_dx, dv_dy) = torch.view_as_real(
@@ -81,15 +82,66 @@ def compute_wirtinger_jacobian(model, outputs):
                                 grad(
                                     outputs=v,
                                     inputs=model.parameters(),
-                                    grad_outputs=grad_outputs.unsqueeze(1).type(torch.complex128),
+                                    grad_outputs=grad_outputs.unsqueeze(1),
                                     # retain_graph=True,
                                     create_graph=True
                                 )
-                            ) for grad_outputs in torch.eye(v.shape[0]).unbind()]
+                            ) for grad_outputs in torch.eye(v.shape[0]).type(torch.complex128).unbind()]
                         )
                      ).unbind(-1)
     
     # %% Wirtinger derivatives
+    df_dx = du_dx + 1j * dv_dx
+    df_dy = du_dy + 1j * dv_dy
+    df_dz = 0.5 * (df_dx - 1j * df_dy)
+    # df_dc = 0.5 * (df_dx + 1j * df_dy)
+
+    # Return a complex Tensor of size [num_parameters, num_inputs]
+    return df_dz.clone().detach()
+
+# -----------------------------------------------------------------
+# Function to compute the Jacobian of Ψ(x) wrt parameters
+def compute_wirtinger_jacobian(model, outputs):
+    """
+    Computes the Jacobian of the outputs of the model wrt the parameters of the model.
+    
+    Arguments:
+        model (nn.Module): PyTorch model containing parameters.
+        outputs (Tensor): Complex-valued outputs from the model.
+
+    Returns:
+        Tensor: Wirtinger Jacobian (complex-valued).
+    """
+    # Split wavefunction into real and imaginary
+    u =       0.5 * (outputs + outputs.conj())
+    v = -1j * 0.5 * (outputs - outputs.conj())
+
+    # grid length
+    n = outputs.shape[0]
+
+    # Compute partial derivatives - Jacobians
+    def partial_derivatives(outputs, inputs):
+        # Identity Tensor
+        eye = torch.eye(n).type(torch.complex128).unsqueeze(-1)
+        # Gradients
+        gradients = grad(
+            outputs=outputs,
+            inputs=inputs,
+            grad_outputs=eye,
+            # retain_graph=True,
+            create_graph=True,
+            is_grads_batched=True
+            )
+        flattened_gradients = [gradient.reshape(n, -1) for gradient in gradients]
+        return  torch.view_as_real(
+                    torch.cat(flattened_gradients, dim=-1)
+                    ).unbind(-1)
+
+    # Partial derivatives
+    (du_dx, du_dy) = partial_derivatives(u, model.parameters())
+    (dv_dx, dv_dy) = partial_derivatives(v, model.parameters())
+    
+    # Wirtinger derivatives
     df_dx = du_dx + 1j * dv_dx
     df_dy = du_dy + 1j * dv_dy
     df_dz = 0.5 * (df_dx - 1j * df_dy)

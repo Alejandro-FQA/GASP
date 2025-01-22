@@ -170,7 +170,9 @@ def evo_fig_params(time, mesh, den, params, fig_path='output.pdf'):
     norm = TwoSlopeNorm(vmin=-vabs, vcenter=0, vmax=vabs)
 
     # Middle Panel
-    pcm_1 = axs[1].pcolor(time, np.arange(num_params), real_params.T, 
+    pcm_1 = axs[1].pcolor(time, 
+                          np.arange(num_params) if num_params > 1 else np.arange(num_params + 1), 
+                          real_params.T if num_params > 1 else np.hstack([real_params, real_params]).T,
                           cmap=cmap, 
                           norm=norm, 
                           shading='auto')
@@ -185,7 +187,9 @@ def evo_fig_params(time, mesh, den, params, fig_path='output.pdf'):
                 fontsize=12)
     
     # Bottom Panel
-    axs[2].pcolor(time, np.arange(num_params), imag_params.T, 
+    axs[2].pcolor(time, 
+                  np.arange(num_params) if num_params > 1 else np.arange(num_params + 1), 
+                  imag_params.T if num_params > 1 else np.hstack([imag_params, imag_params]).T,
                   cmap=cmap, 
                   norm=norm, 
                   shading='auto')
