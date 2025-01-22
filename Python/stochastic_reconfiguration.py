@@ -3,7 +3,6 @@
 # PyTorch imports
 import torch
 from torch.autograd import grad
-from torch.func import vmap
 
 # Custom imports
 import utilities as utils
