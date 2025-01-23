@@ -9,3 +9,4 @@ dependencies:
   - torchaudio
   - torchvision
   - tensorboard
+prefix: /home/alejandro23/miniconda3/envs/ml-tools-for-qm
