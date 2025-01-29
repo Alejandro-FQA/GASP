@@ -1,6 +1,7 @@
 ''' [1] A. Sinibaldi et al., Quantum 7, 1131 (2023).'''
 
 # PyTorch imports
+import numpy as np
 import torch
 from torch.autograd import grad
 
@@ -131,7 +132,9 @@ def compute_wirtinger_jacobian(model, outputs):
             create_graph=True,
             is_grads_batched=True
             )
-        flattened_gradients = [gradient.reshape(n, -1) for gradient in gradients]
+        # flattened_gradients = [gradient.reshape(n, -1) for gradient in gradients]
+        flattened_gradients = list(map(lambda gradient: gradient.reshape(n, -1), gradients))
+
         return  torch.view_as_real(
                     torch.cat(flattened_gradients, dim=-1)
                     ).unbind(-1)
