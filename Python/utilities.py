@@ -43,6 +43,26 @@ def file_ID(directory, file_name, format):
     if msg: print(f"This file version is v{v_id}")
     return file_path
 
+def reshape_parameters(model, parameters):
+    '''
+    Reshape the parameters to fit the NN arquitecture
+    
+    Parameters:
+    model (model): NN containing the parameters
+    parameters  (tensor): 1D tensor with the values of the parameters
+
+    Return:
+    list_parameters (list): returns a list of tensors with the model arquitecture
+    '''
+    # list of parameters with the arquiteture
+    list_parameters = []
+    start = 0
+    for shape in [tuple(p.shape) for p in model.parameters()]:
+        end = start + np.prod(shape)
+        list_parameters.append(parameters[start:end].reshape(shape)) 
+        start += np.prod(shape)  
+
+    return list_parameters
 
 def hermite(n, x):
     """

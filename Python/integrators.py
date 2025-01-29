@@ -2,7 +2,6 @@
 import torch
 from torch.nn.utils import parameters_to_vector, vector_to_parameters
 
-import numpy as np
 from tqdm import tqdm
 import os
 
@@ -11,27 +10,6 @@ import utilities as utils
 import analysis
 import parameters as pm
 import stochastic_reconfiguration as SR
-
-def reshape_parameters(model, parameters):
-    '''
-    Reshape the parameters to fit the NN arquitecture
-    
-    Parameters:
-    model (model): NN containing the parameters
-    parameters  (tensor): 1D tensor with the values of the parameters
-
-    Return:
-    list_parameters (list): returns a list of tensors with the model arquitecture
-    '''
-    # list of parameters with the arquiteture
-    list_parameters = []
-    start = 0
-    for shape in [tuple(p.shape) for p in model.parameters()]:
-        end = start + np.prod(shape)
-        list_parameters.append(parameters[start:end].reshape(shape)) 
-        start += np.prod(shape)  
-
-    return list_parameters
 
 # -----------------------------------------------------------------
 
@@ -81,8 +59,7 @@ def integrator(model, x_grid, t_grid=None, file_path=pm.file_path):
     Args:
         model (torch.nn.Module): The model whose parameters evolve in time.
         x_grid (torch.Tensor): The spatial grid (inputs) for the model.
-        t_grid (torch.Tensor): The time steps to save the model.
-        If not given, default will be used.
+        t_grid (torch.Tensor): The time steps to save the model.   
         fiel_path (str): Path to the HDF5 file where the model is saved.
     """
     # Ensure data directory exists
