@@ -1,5 +1,7 @@
 Python/__pycache__/
 Python/data/
 Python/figs/
+Python/latex/
+Python/main_launcher.py
 LaTeX/*
 !LaTeX/GASP.pdf

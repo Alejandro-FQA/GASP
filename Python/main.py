@@ -94,7 +94,7 @@ n = 0 # quantum number
 target = lambda x: utils.QHO(n, x-1) # HO wavefunction
 # target = lambda x: 1 / torch.cosh((x - 0)) * torch.exp(-1j * 0.0 * x) # Bright soliton
 # Fitting
-utils.fitting(model, mesh, target, fig_path, visibility=True)
+# utils.fitting(model, mesh, target, fig_path, visibility=True)
 
 #%% Stochastic Reconfiguration
 # Initial conditions
@@ -186,4 +186,20 @@ energy_diff = real_evo.energy - target_energy
 fig_path_0 = fig_path[:-4] + "_compare." + pm.fig_format
 plots.evo_fig_compare(real_evo.t_grid[:-10], mesh, den_diff[:,:-10], energy_diff[:-10], fig_path=fig_path_0)
 
-# %%
+# %% Compute the forces and QGT
+import stochastic_reconfiguration as SR
+
+J, F, S = [], [], []
+
+for it in range(len(real_evo.t_grid)):
+    real_evo.load_model_state(time_step=it)
+
+    # Compute wavefuntion
+    psi = model(grid) 
+
+    # Compute the Jacobian
+    J.append(SR.compute_wirtinger_jacobian(model, psi))
+    # Compute the variational forces
+    F.append(SR.compute_variational_forces(psi, J[it], grid))
+    # Compute the QGT
+    S.append(SR.compute_qgt(psi, J[it]))

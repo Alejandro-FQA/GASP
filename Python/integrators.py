@@ -155,6 +155,7 @@ def integrator(model, x_grid, t_grid=None, file_path=pm.file_path):
 
         analysis.save_variable(t_grid, "t_grid", file_path)
         analysis.save_variable(pbar.format_dict['elapsed'], 'cmp_time', file_path)
+
 # -----------------------------------------------------------------
 def RK4(u, model, grid):
 
