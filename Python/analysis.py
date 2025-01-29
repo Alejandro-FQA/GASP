@@ -156,7 +156,7 @@ class Dynamics:
         self.x_grid = x_grid
 
         # Main quantities
-        self.psi, self.norm, self.energy = self.compute_psi()
+        self.psi, self.norm, self.energy, self.jacobian, self.forces, self.qgt = self.compute_psi()
 
     def load_model_state(self, time_step):
         """
@@ -201,33 +201,47 @@ class Dynamics:
             psi (np.ndarray): Wavefunction at each grid point normalized to 1.
             norm (np.array): Norm at each time step.
             enrgy (np.array): Energy per particle.
+            jacobian (np.array): Jacobian.
+            forces (np.array): Variational forces.
+            qgt (np.array): Quantum geometric tensor.
         """
         psi = []
         norm = []
         energy = []
+        jacobian = []
+        forces = []
+        qgt = []
 
         if not x_grid:
             x_grid = self.x_grid
 
+        def compute_all(time_step):
+            output = self.model(x_grid)
+            # Compute the normalized wavefunction
+            norm.append(torch.vdot(output[:,0], output[:,0]).detach())
+            psi.append((output[:,0] / torch.sqrt(norm[time_step])).detach())
+            try:
+                # Compute the energy
+                energy.append(SR.compute_energy(output, x_grid).detach())
+                # Compute the Jacobian
+                jacobian.append(SR.compute_wirtinger_jacobian(self.model, output).detach())
+                # Conpute the variational forces
+                forces.append(SR.compute_variational_forces(output, jacobian[time_step], x_grid).detach())
+                # Compute the QGT
+                qgt.append(SR.compute_qgt(output, jacobian[time_step]).detach())
+            except Exception as error:
+                print(f'error in iteration {it}: {error}')
+
         if not time_step:
             for it in range(len(self.t_grid)):
                 self.load_model_state(it)
-                output = self.model(x_grid)
-                
-                norm.append(torch.vdot(output[:,0], output[:,0]).detach().numpy())
-                psi.append((output[:,0] / np.sqrt(norm[it])).detach().numpy())
-                try:
-                    energy.append(SR.compute_energy(output, x_grid).detach().numpy())
-                except Exception as error:
-                    print(f'error in iteration {it}: {error}')
+                compute_all(it)
         else:
             self.load_model_state(time_step)
-            output = self.model(x_grid)
-            norm.append(torch.vdot(output[:,0], output[:,0]).detach().numpy())
-            psi.append((output[:,0] / np.sqrt(norm[time_step])).detach().numpy())
-            energy.append(SR.compute_energy(output, x_grid).detach().numpy())
+            compute_all(time_step)
 
-        return np.array(psi), np.array(norm).real, np.array(energy).real
+        return np.array(psi), np.array(norm).real, np.array(energy).real, \
+               np.array(jacobian), np.array(forces), np.array(qgt)
     
     def compute_variance(self):
         """
