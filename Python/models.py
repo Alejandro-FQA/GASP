@@ -16,6 +16,9 @@ class Gaussian(nn.Module):
             print('num_params set to 1')
         self.params = nn.Parameter(torch.view_as_complex(torch.randn(self.num_params,2)))
 
+        # Network architecture
+        self.net_ark = f"{num_params}"
+
     def update_params(self, new_params):
         # Optionally add a method to update the parameters manually
         with torch.no_grad():  # Make sure it doesn't interfere with autograd
@@ -46,6 +49,9 @@ class Soliton(nn.Module):
             self.num_params = 4
             print('num_params set to 4')
         self.params = nn.Parameter(torch.view_as_complex(torch.randn(self.num_params,2)))
+        
+        # Network architecture
+        self.net_ark = f"{num_params}"
 
     def update_params(self, new_params):
         # Optionally add a method to update the parameters manually
@@ -84,6 +90,9 @@ class NQS(nn.Module):
         
         # List to hold all layers
         layers = []
+
+        # Network architecture
+        self.net_ark = "-".join(map(str, [input_size, *hidden_layers, output_size]))
         
         # Add the input layer and hidden layers
         prev_size = input_size
