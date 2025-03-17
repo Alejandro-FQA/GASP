@@ -13,8 +13,9 @@ import plots
 # import Customs Classes
 from models import Gaussian, NQS, Soliton
 from analysis import Dynamics
-# improt Custom Functions
+# import Custom Functions
 from integrators import integrator
+
 
 #%% Default type
 torch.set_default_dtype(torch.float64)
@@ -33,7 +34,7 @@ pm.architecture = 'NQS'
 match pm.architecture:
     case 'GASP':
         # Create the NN model
-        num_params = 1 # only 1 or 2 parameters
+        num_params = 2 # only 1 or 2 parameters
         net_ark = f"{num_params}"
         model = Gaussian(num_params).to(device) 
 
@@ -67,7 +68,7 @@ match pm.architecture:
         # Network architecture
         input_size = 1
         output_size = 1
-        hidden_layers = [4,8,4]
+        hidden_layers = [5]
         net_ark = "-".join(map(str, [input_size, *hidden_layers, output_size]))        
         # Create Neural Quantum State
         model = NQS(input_size, output_size, hidden_layers).to(device)
@@ -139,7 +140,6 @@ pm.t_max = 50
 
 # Integrator parameters
 pm.evolution = 'real'
-
 pm.lambda_reg = 1e-3 * (1 + 1j)
 
 # Perform real time evolution
@@ -185,21 +185,3 @@ energy_diff = real_evo.energy - target_energy
 
 fig_path_0 = fig_path[:-4] + "_compare." + pm.fig_format
 plots.evo_fig_compare(real_evo.t_grid[:-10], mesh, den_diff[:,:-10], energy_diff[:-10], fig_path=fig_path_0)
-
-# %% Compute the forces and QGT
-import stochastic_reconfiguration as SR
-
-J, F, S = [], [], []
-
-for it in range(len(real_evo.t_grid)):
-    real_evo.load_model_state(time_step=it)
-
-    # Compute wavefuntion
-    psi = model(grid) 
-
-    # Compute the Jacobian
-    J.append(SR.compute_wirtinger_jacobian(model, psi))
-    # Compute the variational forces
-    F.append(SR.compute_variational_forces(psi, J[it], grid))
-    # Compute the QGT
-    S.append(SR.compute_qgt(psi, J[it]))

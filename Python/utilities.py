@@ -84,7 +84,7 @@ def hermite(n, x):
 
 def QHO(n, x):
     """
-    Quantum Harmonic Oscillator n-th bound state
+    Computes the Quantum Harmonic Oscillator n-th bound state using Hermite polynomials.
 
     Args:
         n (int): Quantum number.                    
@@ -122,16 +122,28 @@ def derivative(f, x):
                     create_graph=True
                     )
     except Exception as error:
-        print(f"x_grid dtype: {x.dtype}, requires_grad: {x.requires_grad}")
-        print(f"psi dtype: {f.dtype}, requires_grad: {f.requires_grad}")
-        print('Error: ', error)
+        print(f"x dtype: {x.dtype}, shape: {x.shape}, requires_grad: {x.requires_grad}\n"
+              f"f dtype: {f.dtype}, shape: {f.shape}, requires_grad: {f.requires_grad}\n"
+              f"Error occurred while computing the derivative of f with respect to x.\n"
+              f"Error: {error}")
+        return torch.zeros_like(f)
 
     return dfdx
 
 def second_derivative(f, x):
+    """
+    Compute the second derivative of a complex-valued function f(x) at x.
+
+    Args:
+        f (torch.Tensor): Function that depends on x.                    
+        x (torch.Tensor): Parameters of f.
+
+    Returns:
+        d2fdx2 (torch.Tensor): Second derivative of f at x.
+    """
     # Split function
     u =       0.5 * (f + f.conj())
-    v = -1j * 0.5 * (f - f.conj())  
+    v = -1j * 0.5 * (f - f.conj())
 
     (du_dx, _) = torch.view_as_real(derivative(u, x)).type_as(u).unbind(-1)
     (dv_dx, _) = torch.view_as_real(derivative(v, x)).type_as(v).unbind(-1)

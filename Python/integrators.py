@@ -38,12 +38,12 @@ def EOM(parameters, model, grid):
 
     # Moore-Penrose psudo-inverse    
     # qgt_inv = torch.linalg.pinv(Sr)
-
+    
     # Solve linear system:
     # TODO: choose linear solver
     match pm.evolution:
         case 'real':
-            parameters = torch.linalg.solve(S, -1j * F)
+            parameters = torch.linalg.solve(S,  -1j*F)
             # parameters = torch.linalg.lstsq(S, -1j * F)[0]
         case 'imag':
             parameters = torch.linalg.solve(S, -F)

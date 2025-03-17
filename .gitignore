@@ -5,3 +5,6 @@ Python/latex/
 Python/main_launcher.py
 LaTeX/*
 !LaTeX/GASP.pdf
+compare.py
+debugger.py
+discards.py

@@ -8,8 +8,8 @@ w = 1.
 # Time evolution parameters
 t_size = 1000           # time vector size without t = 0
 dt = 0.1                # time discretization
-t_max = 1               # last time instance
-evolution = 'real'
+t_max = 50               # last time instance
+evolution = 'imag'
 integrator = 'RK4'
 progress_bar = True
 

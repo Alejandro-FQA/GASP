@@ -178,8 +178,9 @@ def compute_variational_forces(psi, psi_grads, grid):
     psi_grads_conj = torch.conj(psi_grads)
 
     # Normalization
+    # N = torch.einsum('i,i->', psi_conj, psi)
     N = torch.vdot(psi, psi)
-
+    
     # Variational forces
     variational_forces =  torch.einsum('ji,j->i', psi_grads_conj, H_psi) / N - \
                           torch.einsum('ji,j,k,k->i', psi_grads_conj, psi, psi_conj, H_psi) / N ** 2
@@ -206,11 +207,18 @@ def compute_qgt(psi, psi_grads):
     psi_conj = torch.conj(psi)
     psi_grads_conj = torch.conj(psi_grads)
 
+
     # Normalization
+    # N = torch.einsum('i,i->', psi_conj, psi)
     N = torch.vdot(psi, psi)
 
-    qgt = torch.einsum('ki,kj->ij', psi_grads_conj, psi_grads) / N - \
-          torch.einsum('ji,j,k,kl->il', psi_grads_conj, psi, psi_conj, psi_grads) / N ** 2
+    match pm.evolution:
+        case 'imag':
+            qgt = torch.einsum('ki,kj->ij', psi_grads_conj, psi_grads) / N - \
+                torch.einsum('ji,j,k,kl->il', psi_grads_conj, psi, psi_conj, psi_grads) / N ** 2
+        case 'real':
+            qgt = torch.einsum('ki,kj->ij', psi_grads_conj, psi_grads) / N - \
+                torch.einsum('ji,j,k,kl->il', psi_grads_conj, psi, psi_conj, psi_grads) / N ** 2
    
     return qgt.clone().detach()
 
